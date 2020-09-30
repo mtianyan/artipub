@@ -35,6 +35,20 @@
   margin-left: 10px;
 }
 
+.settingBtn {
+  color: white;
+  background: #1890FF;
+  border-color: #1890FF;
+  border-radius: 50%;
+  margin-left: 10px;
+}
+
+.settingBtn:hover {
+  color: #1890FF;
+  background: white;
+  border-color: #1890FF;
+}
+
 .loginBtn {
   color: white;
   background: orange;

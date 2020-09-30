@@ -230,6 +230,22 @@ class BaseSpider {
   async inputTitle(article, editorSel, task) {
     const el = document.querySelector(editorSel.title);
     el.focus();
+    HTMLPreElement.prototype.select = function() {
+      let range = document.createRange();
+      range.selectNodeContents(this);
+
+      let sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+    }
+    HTMLTextAreaElement.prototype.select = function() {
+      let range = document.createRange();
+      range.selectNodeContents(this);
+
+      let sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+    }
     el.select();
     document.execCommand('delete', false);
     document.execCommand('insertText', false, task.title || article.title);
@@ -242,6 +258,14 @@ class BaseSpider {
     const el = document.querySelector(editorSel.content);
     el.focus();
     try {
+      HTMLDivElement.prototype.select = function() {
+        let range = document.createRange();
+        range.selectNodeContents(this);
+
+        let sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
       HTMLPreElement.prototype.select = function() {
         let range = document.createRange();
         range.selectNodeContents(this);

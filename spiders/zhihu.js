@@ -4,6 +4,19 @@ const BaseSpider = require('./base')
 const constants = require('../constants')
 
 class ZhihuSpider extends BaseSpider {
+
+  /**
+   * 输入文章标题
+   */
+  async inputTitle(article, editorSel, task) {
+    const el = document.querySelector(editorSel.title);
+    el.click()
+    el.focus();
+    el.select();
+    document.execCommand('delete', false);
+    document.execCommand('insertText', false, task.title || article.title);
+  }
+
   async afterGoToEditor() {
     // 创建tmp临时文件夹
     const dirPath = path.resolve(path.join(__dirname, '..', 'tmp'))
