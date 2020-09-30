@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>数据库设置</title>
+  <link rel="stylesheet" href="./settings.css">
+  <link rel="stylesheet" href="../node_modules/antd/dist/antd.min.css">
+</head>
+<body>
+<div class="ant-card-body">
+  <form id="basic" class="ant-form ant-form-horizontal">
+    <div class="ant-row ant-form-item">
+      <div class="ant-col ant-col-8 ant-form-item-label"><label for="basic_username" class="ant-form-item-required"
+                                                                title="Username">数据库地址</label></div>
+      <div class="ant-col ant-col-16 ant-form-item-control">
+        <div class="ant-form-item-control-input">
+          <div class="ant-form-item-control-input-content"><input type="text" id="basic_username" class="ant-input"
+                                                                  value="" placeholder="http://127.0.0.1:27017"></div>
+        </div>
+      </div>
+    </div>
+    <div class="ant-row ant-form-item">
+      <div class="ant-col ant-col-offset-21 ant-form-item-control">
+        <div class="ant-form-item-control-input">
+          <div class="ant-form-item-control-input-content">
+            <button type="submit" class="ant-btn ant-btn-primary"><span>保存</span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+
+<script src="./settings.js">
+</script>
+</body>
+</html>

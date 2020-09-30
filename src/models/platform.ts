@@ -182,21 +182,25 @@ const PlatformModel: PlatformModelType = {
         type: 'setUpdateCookieStatusLoading',
         payload: true,
       });
-      yield call(updateCookieStatus);
-      yield put({
-        type: 'setUpdateCookieStatusLoading',
-        payload: false,
-      });
-      const response = yield call(queryPlatformList);
-      yield put({
-        type: 'setPlatformList',
-        payload: response.data,
-      });
+      const res = yield call(updateCookieStatus);
+      if(res){
+        yield put({
+          type: 'setUpdateCookieStatusLoading',
+          payload: false,
+        });
+        const response = yield call(queryPlatformList);
+        yield put({
+          type: 'setPlatformList',
+          payload: response.data,
+        });
+      }
     }
   },
 
   reducers: {
     setPlatformList(state, action) {
+      console.log("setPlatformList")
+      console.log(action)
       return {
         ...state,
         platforms: action.payload,

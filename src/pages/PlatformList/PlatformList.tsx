@@ -1,6 +1,24 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState,useReducer } from 'react';
 import { PageHeaderWrapper } from '@ant-design/pro-layout';
-import { Alert, Button, Card, Divider, Drawer, Form, Input, Modal, Select, Spin, Table, Tag, Tooltip,Radio,Row,Col } from 'antd';
+import {
+  Alert,
+  Button,
+  Card,
+  Divider,
+  Drawer,
+  Form,
+  Input,
+  Modal,
+  Select,
+  Spin,
+  Table,
+  Tag,
+  Tooltip,
+  Radio,
+  Row,
+  Col,
+  message
+} from 'antd';
 import { Platform, PlatformModelState, SiteArticle } from '@/models/platform';
 import { ConnectProps, ConnectState, Dispatch } from '@/models/connect';
 import { connect } from 'dva';
@@ -19,11 +37,17 @@ import imgCnblogs from '@/assets/img/cnblogs-logo.gif';
 import imgV2ex from '@/assets/img/v2ex-logo.jpg';
 import imgWechat from '@/assets/img/wechat-logo.jpg';
 import style from './PlatformList.scss';
-
 export interface PlatformListProps extends ConnectProps {
   platform: PlatformModelState;
   dispatch: Dispatch;
 }
+declare global {
+  interface Window {
+    require: any;
+  }
+}
+const ipcRenderer = window.require("electron").ipcRenderer;
+
 
 const PlatformList: React.FC<PlatformListProps> = props => {
   const { dispatch, platform } = props;
@@ -168,6 +192,10 @@ const PlatformList: React.FC<PlatformListProps> = props => {
       TDAPP.onEvent('平台管理-打开账户设置')
     };
 
+  const onLogin = (d) => {
+    // 打开登录窗口
+    ipcRenderer.send('login', {"platform": d})
+  }
   const onAccountModalCancel = async () => {
     await dispatch({
       type: 'platform/saveAccountModalVisible',
@@ -255,23 +283,23 @@ const PlatformList: React.FC<PlatformListProps> = props => {
       key: 'label',
       width: '180px',
     },
-    {
-      title: '平台描述',
-      dataIndex: 'description',
-      key: 'description',
-      width: 'auto',
-      render: text => {
-        let shortText = text;
-        if (text && text.length > 50) {
-          shortText = `${shortText.substr(0, 50)}...`;
-        }
-        return (
-          <div className={style.description} title={text}>
-            {shortText}
-          </div>
-        );
-      },
-    },
+    // {
+    //   title: '平台描述',
+    //   dataIndex: 'description',
+    //   key: 'description',
+    //   width: 'auto',
+    //   render: text => {
+    //     let shortText = text;
+    //     if (text && text.length > 50) {
+    //       shortText = `${shortText.substr(0, 50)}...`;
+    //     }
+    //     return (
+    //       <div className={style.description} title={text}>
+    //         {shortText}
+    //       </div>
+    //     );
+    //   },
+    // },
     {
       title: 'Cookie状态',
       dataIndex: 'cookieStatus',
@@ -324,6 +352,15 @@ const PlatformList: React.FC<PlatformListProps> = props => {
                 icon="key"
                 className={style.loginBtn}
                 onClick={onAccount(d)}
+              />
+            </Tooltip>
+            <Tooltip title="打开浏览器登录">
+              <Button
+                type="default"
+                shape="circle"
+                icon="user"
+                className={style.settingBtn}
+                onClick={()=>onLogin(d)}
               />
             </Tooltip>
             <Tooltip title="配置">
@@ -443,6 +480,12 @@ const PlatformList: React.FC<PlatformListProps> = props => {
   const onUpdateCookieStatus = () => {
     dispatch({
       type: 'platform/updateCookieStatus',
+    }).then(value=>{
+      dispatch({
+        type: 'platform/fetchPlatformList',
+      });
+      forceUpdate()
+      message.success("刷新cookie状态成功")
     });
   };
 
@@ -459,7 +502,7 @@ const PlatformList: React.FC<PlatformListProps> = props => {
   const onClose = () => {
     setDrawerVisible(false)
   }
-
+  const [, forceUpdate] = useReducer(x => x + 1, 0);
   const provinceData = ['开发语言', '前端开发'];
   const cityData = {
     开发语言: ['java', 'Python', 'C++'],
@@ -546,8 +589,14 @@ const PlatformList: React.FC<PlatformListProps> = props => {
     }
     return 'warning'
   }
+  const pageProps = window.navigator.userAgent.indexOf("Electron") !== -1 ? {
+    pageHeaderRender: false,
+    title: false,
+    // style: {display: 'none'}
+  } : {}
+  const dataSource = platform.platforms;
   return (
-    <PageHeaderWrapper>
+    <PageHeaderWrapper {...pageProps}>
       <Drawer
         title={`${curPlatform ? curPlatform.name : '平台'} 配置项`}
         width={720}
@@ -677,7 +726,7 @@ const PlatformList: React.FC<PlatformListProps> = props => {
       {/* <div className={style.actions}> */}
       {/*  <Button className={style.addBtn} type="primary" onClick={onAdd}>添加平台</Button> */}
       {/* </div> */}
-      <div style={{ textAlign: 'right', marginBottom: '20px' }}>
+      <div style={{ textAlign: 'right', marginBottom: '10px', paddingTop: '10px' }}>
         <Button
           type="primary"
           loading={platform.updateCookieStatusLoading}
@@ -687,9 +736,7 @@ const PlatformList: React.FC<PlatformListProps> = props => {
           更新Cookie状态
         </Button>
       </div>
-      <Card>
-        <Table dataSource={platform.platforms} columns={columns} />
-      </Card>
+      {window.navigator.userAgent.indexOf("Electron") === -1?<Card><Table  dataSource={dataSource} columns={columns} /></Card>:<Table dataSource={platform.platforms} columns={columns} />}
     </PageHeaderWrapper>
   );
 };

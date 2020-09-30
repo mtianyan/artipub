@@ -2,6 +2,7 @@ const models = require('../models')
 
 module.exports = {
   addCookies: async (req, res) => {
+    console.log(req.body)
     const cookies = req.body
     for (let i = 0; i < cookies.length; i++) {
       const c = cookies[i]

@@ -230,22 +230,22 @@ class BaseSpider {
   async inputTitle(article, editorSel, task) {
     const el = document.querySelector(editorSel.title);
     el.focus();
-    HTMLPreElement.prototype.select = function() {
+    HTMLPreElement.prototype.select = function () {
       let range = document.createRange();
       range.selectNodeContents(this);
 
       let sel = window.getSelection();
       sel.removeAllRanges();
       sel.addRange(range);
-    }
-    HTMLTextAreaElement.prototype.select = function() {
+    };
+    HTMLTextAreaElement.prototype.select = function () {
       let range = document.createRange();
       range.selectNodeContents(this);
 
       let sel = window.getSelection();
       sel.removeAllRanges();
       sel.addRange(range);
-    }
+    };
     el.select();
     document.execCommand('delete', false);
     document.execCommand('insertText', false, task.title || article.title);
@@ -258,22 +258,22 @@ class BaseSpider {
     const el = document.querySelector(editorSel.content);
     el.focus();
     try {
-      HTMLDivElement.prototype.select = function() {
+      HTMLDivElement.prototype.select = function () {
         let range = document.createRange();
         range.selectNodeContents(this);
 
         let sel = window.getSelection();
         sel.removeAllRanges();
         sel.addRange(range);
-      }
-      HTMLPreElement.prototype.select = function() {
+      };
+      HTMLPreElement.prototype.select = function () {
         let range = document.createRange();
         range.selectNodeContents(this);
 
         let sel = window.getSelection();
         sel.removeAllRanges();
         sel.addRange(range);
-      }
+      };
       el.select();
     } catch (e) {
       // do nothing
@@ -428,9 +428,11 @@ class BaseSpider {
     this.platform = await models.Platform.findOne({ _id: ObjectId(this.platformId) });
 
     const cookie = await this.getCookiesForAxios();
-    let url = this.platform.url
+    let url = this.platform.url;
     if (this.platform.name === constants.platform.CSDN) {
-      url = "https://me.csdn.net/api/user/getUserPrivacy"
+      url = 'https://me.csdn.net/api/user/getUserPrivacy';
+    } else if (this.platform.name === constants.platform.CNBLOGS) {
+      url = 'https://account.cnblogs.com/user/userinfo';
     }
     axios.get(url, {
         headers: {
@@ -441,30 +443,29 @@ class BaseSpider {
         console.log(url);
         let text = res.data;
         if (this.platform.name === constants.platform.TOUTIAO) {
-          this.platform.loggedIn = text.includes('userName');
+          this.platform.loggedIn = text.includes('/pgc-image/');
         } else if (this.platform.name === constants.platform.CSDN) {
-          text = text.message
+          text = text.message;
           this.platform.loggedIn = text.includes('成功');
         } else if (this.platform.name === constants.platform.JIANSHU) {
           this.platform.loggedIn = text.includes('current_user');
         } else if (this.platform.name === constants.platform.CNBLOGS) {
-          this.platform.loggedIn = text.includes('我的博客');
+          this.platform.loggedIn = text.includes('spaceUserId');
         } else if (this.platform.name === constants.platform.SEGMENTFAULT) {
           this.platform.loggedIn = text.includes('user_id');
-        }
-        else if (this.platform.name === constants.platform.OSCHINA) {
-          this.platform.loggedIn = text.includes('g_user_name');
-        }
-        else if (this.platform.name === constants.platform.V2EX) {
+        } else if (this.platform.name === constants.platform.OSCHINA) {
+          this.platform.loggedIn = text.includes('开源豆');
+        } else if (this.platform.name === constants.platform.V2EX) {
           this.platform.loggedIn = text.includes('登出');
-        }
-        else {
+        } else {
           this.platform.loggedIn = !text.includes('登录');
         }
         console.log(this.platform.loggedIn);
-        await this.platform.save();
+        this.platform.save();
+      }).catch(error => {
+        this.platform.loggedIn = false;
+        this.platform.save();
       });
-
   }
 }
 

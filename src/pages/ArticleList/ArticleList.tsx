@@ -25,6 +25,13 @@ import imgV2ex from '@/assets/img/v2ex-logo.jpg';
 import imgWechat from '@/assets/img/wechat-logo.jpg';
 import juejin from "@/data/juejin";
 import v2ex from "@/data/v2ex";
+declare global {
+  interface Window {
+    require: any;
+  }
+}
+
+const ipcRenderer = window.require("electron").ipcRenderer;
 
 export interface ArticleListProps extends ConnectProps {
   task: TaskModelState;
@@ -140,9 +147,13 @@ const ArticleList: React.FC<ArticleListProps> = props => {
 
   const onTaskViewArticle: Function = (t: Task) => {
     return () => {
-      window.open(t.url);
+      if(window.navigator.userAgent.indexOf("Electron") === -1){
+        window.open(t.url);
 
-      TDAPP.onEvent('文章管理-查看文章原文');
+        TDAPP.onEvent('文章管理-查看文章原文');
+      }else {
+        ipcRenderer.send('preview', {'url':t.url});
+      }
     };
   };
 
@@ -753,9 +764,13 @@ const ArticleList: React.FC<ArticleListProps> = props => {
       </Form>
     );
   }
-
+  const pageProps = window.navigator.userAgent.indexOf("Electron") !== -1 ? {
+    pageHeaderRender: false,
+    title: false,
+    // style: {display: 'none'}
+  } : {}
   return (
-    <PageHeaderWrapper>
+    <PageHeaderWrapper {...pageProps}>
       <Modal
         title="发布文章"
         visible={article.pubModalVisible}
@@ -789,14 +804,12 @@ const ArticleList: React.FC<ArticleListProps> = props => {
         {platformCommonContent}
         {platformContent}
       </Modal>
-      <div className={style.actions}>
+      <div className={style.actions} style={{paddingTop: '10px'}}>
         <Button className={style.addBtn} type="primary" onClick={onArticleCreate}>
           创建文章
         </Button>
       </div>
-      <Card>
-        <Table dataSource={article.articles} columns={articleColumns} />
-      </Card>
+      {window.navigator.userAgent.indexOf("Electron") === -1? <Card><Table dataSource={article.articles} columns={articleColumns} /></Card>:<Table dataSource={article.articles} columns={articleColumns} />}
     </PageHeaderWrapper>
   );
 };

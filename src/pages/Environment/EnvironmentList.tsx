@@ -118,15 +118,16 @@ const EnvironmentList: React.FC<EnvironmentListProps> = props => {
   TDAPP.onEvent('系统设置-访问页面');
 
   return (
-    <PageHeaderWrapper>
-      <Card>
-        <Table
-          dataSource={environment.environments ? environment.environments.filter((d: Environment) => ![
+    <PageHeaderWrapper title={false}>
+      {window.navigator.userAgent.indexOf("Electron") === -1?<Card><Table dataSource={environment.environments ? environment.environments.filter((d: Environment) => ![
             constants.environment.WECHAT_ACCESS_TOKEN,
           ].includes(d._id || '')) : []}
           columns={columns}
-        />
-      </Card>
+        /></Card>:<Table dataSource={environment.environments ? environment.environments.filter((d: Environment) => ![
+        constants.environment.WECHAT_ACCESS_TOKEN,
+      ].includes(d._id || '')) : []}
+                         columns={columns}
+      />}
     </PageHeaderWrapper>
   );
 };

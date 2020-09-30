@@ -139,7 +139,7 @@ const ArticleEdit: React.FC<ArticleEditProps> = props => {
     <BlankLayout>
       <div className={style.articleEdit}>
         {/*标题*/}
-        <div className={style.topBar}>
+        <div className={style.topBar} style={{paddingTop: 5}}>
           <Input
             className={style.title}
             placeholder="文章标题"
