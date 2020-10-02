@@ -1,10 +1,12 @@
 const models = require('../models')
 const constants = require('../constants')
-const ObjectId = require('bson').ObjectId
-
+// const ObjectId = require('bson').ObjectId
+const ObjectId = (id)=>{
+  return id
+}
 module.exports = {
   getArticleList: async (req, res) => {
-    const articles = await models.Article.find().sort({ _id: -1 })
+    const articles = await models.Article.find().sort({ _id: -1 }).execAsync();
     for (let i = 0; i < articles.length; i++) {
       const article = articles[i]
       article.tasks = await models.Task.find({ articleId: article._id }).execAsync();

@@ -1,9 +1,12 @@
 const portfinder = require('portfinder')
 const express = require('express')
+const LinvoDB = require('linvodb3');
+const path = require('path');
+LinvoDB.defaults.store = { db: require('leveldown') };
+LinvoDB.dbPath = path.join(process.cwd(), 'db');
 const mongoose = require('mongoose')
 const bodyParser = require('body-parser')
 const morgan = require('morgan')
-
 const init = require('./init')
 const config = require('./config')
 const routes = require('./routes')
@@ -83,11 +86,13 @@ app.post('/environments', routes.environment.editEnv)
 
 // 启动express server
 portfinder.getPortPromise({ port: config.PORT }).then(port => {
-  const Conf = require('conf');
-  const config = new Conf();
-  config.set("url", `http://127.0.0.1:${port}`)
-  console.log(`http://127.0.0.1:${port}`)
-  process.send("setPortSuccess")
+  if(typeof process.send === 'function'){
+    const Conf = require('conf');
+    const config = new Conf();
+    config.set("url", `http://127.0.0.1:${port}`)
+    console.log(`http://127.0.0.1:${port}`)
+    process.send("setPortSuccess")
+  }
   app.listen(port, () => {
     logger.info(`listening on port ${port}`)
   })

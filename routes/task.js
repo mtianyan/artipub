@@ -1,6 +1,9 @@
 const models = require('../models')
 const constants = require('../constants')
-const ObjectId = require('bson').ObjectId
+// const ObjectId = require('bson').ObjectId
+const ObjectId = (id)=>{
+  return id
+}
 const exec = require('child_process').exec
 const path = require('path')
 

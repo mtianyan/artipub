@@ -1,4 +1,7 @@
-const ObjectId = require('bson').ObjectId
+// const ObjectId = require('bson').ObjectId
+const ObjectId = (id)=>{
+  return id
+}
 const constants = require('../constants')
 const models = require('../models')
 
