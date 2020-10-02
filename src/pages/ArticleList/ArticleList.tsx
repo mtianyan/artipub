@@ -31,7 +31,7 @@ declare global {
   }
 }
 
-const ipcRenderer = window.require("electron").ipcRenderer;
+
 
 export interface ArticleListProps extends ConnectProps {
   task: TaskModelState;
@@ -152,6 +152,7 @@ const ArticleList: React.FC<ArticleListProps> = props => {
 
         TDAPP.onEvent('文章管理-查看文章原文');
       }else {
+        const ipcRenderer = window.require("electron").ipcRenderer;
         ipcRenderer.send('preview', {'url':t.url});
       }
     };

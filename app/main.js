@@ -1,27 +1,53 @@
 const { app,Menu, BrowserWindow,ipcMain } = require('electron');
 const AppWindow = require("./AppWindow");
+const isDev = require("electron-is-dev");
 const { fork } = require('child_process');
 const path = require('path');
 const axios = require('axios');
 const menuTemplate = require("./menuTemplate");
 const isDevelopment = true
+
+var pids = []
+var platform = process.platform;
+function killTask() {
+  // try {
+    if (platform === 'win32') {
+      for (let pid of pids) {
+        childProcess.exec('taskkill /pid ' + pid + ' /T /F');
+      }
+      pids = [];
+    } else {
+      for (let pid of pids) {
+        process.kill(pid);
+      }
+      pids = [];
+    }
+    console.log("stop")
+  // } catch (e) {
+  //   console.log('pid not found');
+  // }
+}
 function createServerProcess() {
-  if (!isDevelopment) {
+  if (!isDev) {
     // 生产环境
     serverProcess = fork('./server.js', [], {
-      cwd: path.join(__dirname, '../server'),
+      cwd: path.join(__dirname, '../../'),
     });
   } else {
     // 开发环境
-    serverProcess = fork(require.resolve('./server.js'));
+    serverProcess = fork(require.resolve('../server.js'));
+    pids.push(serverProcess.pid)
     serverProcess.on('close', code => {
       console.log('子线程已经退出', code);
     }).on('uncaughtException', code =>{
       console.log('子进程发生异常', code)
     });
+
   }
 }
-
+const urlLoction = isDev
+  ? "http://localhost:8000"
+  : `file://${path.join(__dirname, "../index.html")}`;
 app.on('ready', () => {
   // 新建一个窗口
   let mainWindow = new BrowserWindow({
@@ -34,9 +60,16 @@ app.on('ready', () => {
   });
   createServerProcess()
   // 原有的项目开发环境下的 devServer 的端口是 3000 ，我们这里以 url 形式把原有项目加载进来
-  mainWindow.loadURL('http://localhost:8000');
+  mainWindow.loadURL(urlLoction);
 });
-
+app.on('window-all-closed', () => {
+  // 在 macOS 上，除非用户用 Cmd + Q 确定地退出，
+  // 否则绝大部分应用及其菜单栏会保持激活。
+  if (process.platform === 'darwin') {
+    killTask()
+    app.quit();
+  }
+});
 // set the menu
 const menu = Menu.buildFromTemplate(menuTemplate);
 Menu.setApplicationMenu(menu);

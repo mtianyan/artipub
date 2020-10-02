@@ -1,3 +1,5 @@
+const portfinder = require('portfinder')
+
 const express = require('express')
 const mongoose = require('mongoose')
 const bodyParser = require('body-parser')
@@ -81,7 +83,10 @@ app.get('/environments', routes.environment.getEnvList)
 app.post('/environments', routes.environment.editEnv)
 
 // 启动express server
-app.listen(config.PORT, () => {
+const foundPort = portfinder.getPort({ port: config.PORT },(err, port) => {
+  console.log("not-fond", port)
+});
+app.listen(foundPort, () => {
   logger.info('listening on port ' + config.PORT)
 })
 

@@ -1,0 +1,13 @@
+{
+  "commonSourceDirectory": "src",
+  "staticSourceDirectory": "public",
+  "title": true,
+  "whiteListedModules": [],
+  "main": {
+    "sourceDirectory": "app",
+    "webpackConfig": "webpack.renderer.js"
+  },
+  "renderer": {
+    "sourceDirectory": null
+  }
+}

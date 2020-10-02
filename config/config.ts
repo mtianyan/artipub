@@ -76,6 +76,7 @@ export const apiEndpoint = 'http://localhost:3000';
 export default {
   plugins,
   history: 'hash',
+  publicPath: './',
   block: {
     defaultGitUrl: 'https://github.com/crawlab-team/artipub',
   },

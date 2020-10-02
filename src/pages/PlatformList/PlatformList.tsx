@@ -46,7 +46,7 @@ declare global {
     require: any;
   }
 }
-const ipcRenderer = window.require("electron").ipcRenderer;
+
 
 
 const PlatformList: React.FC<PlatformListProps> = props => {
@@ -194,6 +194,7 @@ const PlatformList: React.FC<PlatformListProps> = props => {
 
   const onLogin = (d) => {
     // 打开登录窗口
+    const ipcRenderer = window.require("electron").ipcRenderer;
     ipcRenderer.send('login', {"platform": d})
   }
   const onAccountModalCancel = async () => {
