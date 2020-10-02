@@ -1,7 +1,9 @@
 const LinvoDB = require('linvodb3');
 var Promise = require("bluebird");
-const ObjectId = require('bson').ObjectId
-
+// const ObjectId = require('bson').ObjectId
+const ObjectId = (id)=>{
+  return id
+}
 const tokenSchema = {
   accessToken: String,
   platformName: String,

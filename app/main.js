@@ -5,7 +5,6 @@ const { fork } = require('child_process');
 const path = require('path');
 const axios = require('axios');
 const menuTemplate = require("./menuTemplate");
-const isDevelopment = true
 
 var pids = []
 var platform = process.platform;
@@ -33,6 +32,7 @@ function createServerProcess() {
     serverProcess = fork('./server.js', [], {
       cwd: path.join(__dirname, '../../'),
     });
+    pids.push(serverProcess.pid)
   } else {
     // 开发环境
     serverProcess = fork(require.resolve('../server.js'));
@@ -68,18 +68,16 @@ app.on('ready', (event) => {
   serverProcess.on('message', (msg) => {
     console.log('Message from child', msg);
     if(msg === "setPortSuccess"){
-      console.log("xxx")
+
       const Conf = require('conf');
       const config = new Conf();
       apiEndpoint = config.get("url")
-      console.log(apiEndpoint)
       // 原有的项目开发环境下的 devServer 的端口是 3000 ，我们这里以 url 形式把原有项目加载进来
       mainWindow.loadURL(urlLoction);
       mainWindow.webContents.once('dom-ready', () => {
         mainWindow.webContents.send("api", apiEndpoint)
         mainWindow.reload();
       })
-
     }
   });
 });
@@ -141,12 +139,11 @@ ipcMain.on('login', (event, data)=>{
 const {session} = require('electron');
 const https = require('https');
 const jsDom = require("jsdom");
-const icon = require('./app-icon');
 
 //登录某网站获取Cookie通用方法
 function getSiteCookie(url, callback) {
   let win = new BrowserWindow(
-    {width: 700, height: 600, icon: icon.iconFile, title: '【登陆成功后关闭窗口即可完成设置】'});
+    {width: 700, height: 600, title: '【登陆成功后关闭窗口即可完成设置】'});
   win.loadURL(url).then();
   win.on('close', () => {
     // 查询所有与设置的 URL 相关的所有 cookies.

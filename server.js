@@ -3,8 +3,12 @@ const express = require('express')
 const LinvoDB = require('linvodb3');
 const path = require('path');
 LinvoDB.defaults.store = { db: require('leveldown') };
-LinvoDB.dbPath = path.join(process.cwd(), 'db');
-const mongoose = require('mongoose')
+var fs= require("fs")
+const dbPath = path.join(process.cwd(), 'db')
+if(!fs.existsSync(dbPath)){
+  fs.mkdirSync(dbPath);
+}
+LinvoDB.dbPath = dbPath;
 const bodyParser = require('body-parser')
 const morgan = require('morgan')
 const init = require('./init')
@@ -26,12 +30,12 @@ if (process.env.MONGO_PASSWORD) config.MONGO_PASSWORD = process.env.MONGO_PASSWO
 if (process.env.MONGO_AUTH_DB) config.MONGO_AUTH_DB = process.env.MONGO_AUTH_DB
 
 // mongodb连接
-mongoose.Promise = global.Promise
-if (config.MONGO_USERNAME) {
-  mongoose.connect(`mongodb://${config.MONGO_USERNAME}:${config.MONGO_PASSWORD}@${config.MONGO_HOST}:${config.MONGO_PORT}/${config.MONGO_DB}?authenticationDatabase=${config.MONGO_AUTH_DB}`, { useNewUrlParser: true })
-} else {
-  mongoose.connect(`mongodb://${config.MONGO_HOST}:${config.MONGO_PORT}/${config.MONGO_DB}`, { useNewUrlParser: true })
-}
+// mongoose.Promise = global.Promise
+// if (config.MONGO_USERNAME) {
+//   mongoose.connect(`mongodb://${config.MONGO_USERNAME}:${config.MONGO_PASSWORD}@${config.MONGO_HOST}:${config.MONGO_PORT}/${config.MONGO_DB}?authenticationDatabase=${config.MONGO_AUTH_DB}`, { useNewUrlParser: true })
+// } else {
+//   mongoose.connect(`mongodb://${config.MONGO_HOST}:${config.MONGO_PORT}/${config.MONGO_DB}`, { useNewUrlParser: true })
+// }
 
 // bodyParser中间件
 app.use(bodyParser.json())
@@ -91,7 +95,11 @@ portfinder.getPortPromise({ port: config.PORT }).then(port => {
     const config = new Conf();
     config.set("url", `http://127.0.0.1:${port}`)
     console.log(`http://127.0.0.1:${port}`)
-    process.send("setPortSuccess")
+    try{
+      process.send("setPortSuccess")
+    }catch (err){
+      console.log(err)
+    }
   }
   app.listen(port, () => {
     logger.info(`listening on port ${port}`)

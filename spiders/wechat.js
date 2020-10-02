@@ -1,5 +1,8 @@
 const request = require('request-promise-native');
-const ObjectId = require('bson').ObjectId;
+// const ObjectId = require('bson').ObjectId;
+const ObjectId = (id)=>{
+  return id
+}
 const fs = require('fs');
 const cheerio = require('cheerio');
 const BaseSpider = require('./base');

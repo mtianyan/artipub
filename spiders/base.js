@@ -1,5 +1,8 @@
 const PCR = require('puppeteer-chromium-resolver');
-const ObjectId = require('bson').ObjectId;
+// const ObjectId = require('bson').ObjectId;
+const ObjectId = (id)=>{
+  return id
+}
 const models = require('../models');
 const constants = require('../constants');
 const config = require('./config');

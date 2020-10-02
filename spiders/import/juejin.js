@@ -1,4 +1,7 @@
-const ObjectId = require('bson').ObjectId
+// const ObjectId = require('bson').ObjectId
+const ObjectId = (id)=>{
+  return id
+}
 const os = require('os')
 const clipboardy = require('clipboardy')
 const BaseImportSpider = require('./base')
