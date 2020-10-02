@@ -2,7 +2,7 @@ const models = require('../models')
 
 module.exports = {
   getEnvList: async (req, res) => {
-    const environments = await models.Environment.find()
+    const environments = await models.Environment.find().execAsync();
     await res.json({
       status: 'ok',
       data: environments
@@ -23,7 +23,7 @@ module.exports = {
     })
   },
   editEnv: async (req, res) => {
-    let env = await models.Environment.findOne({ _id: req.body._id })
+    let env = await models.Environment.findOne({ _id: req.body._id }).execAsync();
     if (!env) {
       return res.json({
         status: 'ok',
@@ -40,7 +40,7 @@ module.exports = {
     })
   },
   deleteEnv: async (req, res) => {
-    let env = await models.Environment.findOne({ _id: req.body._id })
+    let env = await models.Environment.findOne({ _id: req.body._id }).execAsync();
     if (!env) {
       return res.json({
         status: 'ok',

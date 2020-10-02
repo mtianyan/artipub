@@ -1,5 +1,4 @@
 const portfinder = require('portfinder')
-
 const express = require('express')
 const mongoose = require('mongoose')
 const bodyParser = require('body-parser')
@@ -38,11 +37,11 @@ app.use(bodyParser.json())
 app.use(morgan('dev'))
 
 // 跨域cors
-app.use('*', function (req, res, next) {
+app.use('*', (req, res, next) => {
   res.header('Access-Control-Allow-Origin', req.headers.origin)
   res.header('Access-Control-Allow-Credentials', true)
   res.header('Access-Control-Allow-Headers', 'Content-Type, Content-Length, Authorization, Accept, X-Requested-With')
-  res.header('Access-Control-Allow-Methods', 'PUT, POST, GET, DELETE, OPTIONS')//设置方法
+  res.header('Access-Control-Allow-Methods', 'PUT, POST, GET, DELETE, OPTIONS')// 设置方法
   if (req.method === 'OPTIONS') {
     res.send(200) // 意思是，在正常的请求之前，会发送一个验证，是否可以请求。
   } else {
@@ -83,11 +82,15 @@ app.get('/environments', routes.environment.getEnvList)
 app.post('/environments', routes.environment.editEnv)
 
 // 启动express server
-const foundPort = portfinder.getPort({ port: config.PORT },(err, port) => {
-  console.log("not-fond", port)
-});
-app.listen(foundPort, () => {
-  logger.info('listening on port ' + config.PORT)
+portfinder.getPortPromise({ port: config.PORT }).then(port => {
+  const Conf = require('conf');
+  const config = new Conf();
+  config.set("url", `http://127.0.0.1:${port}`)
+  console.log(`http://127.0.0.1:${port}`)
+  process.send("setPortSuccess")
+  app.listen(port, () => {
+    logger.info(`listening on port ${port}`)
+  })
 })
 
 // 初始化

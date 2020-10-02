@@ -7,7 +7,7 @@ module.exports = {
     const articles = await models.Article.find().sort({ _id: -1 })
     for (let i = 0; i < articles.length; i++) {
       const article = articles[i]
-      article.tasks = await models.Task.find({ articleId: article._id })
+      article.tasks = await models.Task.find({ articleId: article._id }).execAsync();
       const arr = ['readNum', 'likeNum', 'commentNum']
       arr.forEach(key => {
         article[key] = 0
@@ -22,18 +22,18 @@ module.exports = {
     })
   },
   getArticle: async (req, res) => {
-    const article = await models.Article.findOne({ _id: ObjectId(req.params.id) })
-    article.tasks = await models.Task.find({ articleId: article._id })
+    const article = await models.Article.findOne({ _id: ObjectId(req.params.id) }).execAsync();
+    article.tasks = await models.Task.find({ articleId: article._id }).execAsync();
     await res.json({
       status: 'ok',
       data: article
     })
   },
   getArticleTaskList: async (req, res) => {
-    const article = await models.Article.findOne({ _id: ObjectId(req.params.id) })
-    const tasks = await models.Task.find({ articleId: article._id })
+    const article = await models.Article.findOne({ _id: ObjectId(req.params.id) }).execAsync();
+    const tasks = await models.Task.find({ articleId: article._id }).execAsync();
     for (let i = 0; i < tasks.length; i++) {
-      tasks[i].platform = await models.Platform.findOne({ _id: tasks[i].platformId })
+      tasks[i].platform = await models.Platform.findOne({ _id: tasks[i].platformId }).execAsync();
     }
     await res.json({
       status: 'ok',
@@ -57,7 +57,7 @@ module.exports = {
     })
   },
   editArticle: async (req, res) => {
-    let article = await models.Article.findOne({ _id: ObjectId(req.params.id) })
+    let article = await models.Article.findOne({ _id: ObjectId(req.params.id) }).execAsync();
     if (!article) {
       return await res.json({
         status: 'ok',
@@ -75,7 +75,7 @@ module.exports = {
     })
   },
   deleteArticle: async (req, res) => {
-    let article = await models.Article.findOne({ _id: ObjectId(req.params.id) })
+    let article = await models.Article.findOne({ _id: ObjectId(req.params.id) }).execAsync();
     if (!article) {
       return await res.json({
         status: 'ok',
@@ -89,7 +89,7 @@ module.exports = {
     })
   },
   publishArticle: async (req, res) => {
-    let article = await models.Article.findOne({ _id: ObjectId(req.params.id) })
+    let article = await models.Article.findOne({ _id: ObjectId(req.params.id) }).execAsync();
     if (!article) {
       return await res.json({
         status: 'ok',
@@ -105,7 +105,7 @@ module.exports = {
         ]
       },
       checked: true,
-    })
+    }).execAsync();
     for (let task of tasks) {
       task.status = constants.status.NOT_STARTED
       task.ready = true

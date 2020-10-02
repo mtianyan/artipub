@@ -1,13 +1,15 @@
-const mongoose = require('mongoose')
+// const mongoose = require('mongoose')
+const LinvoDB = require('linvodb3');
+var Promise = require('bluebird');
 
-const environmentSchema = new mongoose.Schema({
+const environmentSchema = {
   _id: String,  // key
   label: String,  // label
   value: String,  // value
   updateTs: Date,
   createTs: Date,
-})
+};
 
-const Environment = mongoose.model('environments', environmentSchema)
-
-module.exports = Environment
+var Environment = new LinvoDB('environments', environmentSchema);
+Promise.promisifyAll(Environment.find().__proto__);
+module.exports = Environment;

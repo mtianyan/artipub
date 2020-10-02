@@ -10,7 +10,7 @@ const getCookieStatus = async (platform) => {
 
 module.exports = {
   getPlatformList: async (req, res) => {
-    const platforms = await models.Platform.find()
+    const platforms = await models.Platform.find().execAsync();
     for (let i = 0; i < platforms.length; i++) {
       platforms[i].cookieStatus = await getCookieStatus(platforms[i])
     }
@@ -20,7 +20,7 @@ module.exports = {
     })
   },
   getPlatform: async (req, res) => {
-    const platform = await models.Platform.findOne({ _id: ObjectId(req.params.id) })
+    const platform = await models.Platform.findOne({ _id: ObjectId(req.params.id) }).execAsync();
     platform.cookieStatus = await getCookieStatus(d)
     await res.json({
       status: 'ok',
@@ -47,7 +47,7 @@ module.exports = {
     })
   },
   editPlatform: async (req, res) => {
-    let platform = await models.Platform.findOne({ _id: ObjectId(req.params.id) })
+    let platform = await models.Platform.findOne({ _id: ObjectId(req.params.id) }).execAsync();
     if (!platform) {
       return await res.json({
         status: 'ok',
@@ -70,14 +70,14 @@ module.exports = {
     })
   },
   deletePlatform: async (req, res) => {
-    let platform = await models.Platform.findOne({ _id: ObjectId(req.params.id) })
+    let platform = await models.Platform.findOne({ _id: ObjectId(req.params.id) }).execAsync();
     if (!platform) {
       return await res.json({
         status: 'ok',
         error: 'not found'
       }, 404)
     }
-    await models.Platform.remove({ _id: ObjectId(req.params.id) })
+    await models.Platform.remove({ _id: ObjectId(req.params.id) }).execAsync();
     await res.json({
       status: 'ok',
       data: platform
@@ -85,7 +85,7 @@ module.exports = {
   },
   getPlatformArticles: async (req, res) => {
     // 获取平台
-    const platform = await models.Platform.findOne({ _id: ObjectId(req.params.id) })
+    const platform = await models.Platform.findOne({ _id: ObjectId(req.params.id) }).execAsync();
 
     // 如果平台不存在，返回404错误
     if (!platform) {
@@ -110,7 +110,7 @@ module.exports = {
       const siteArticle = siteArticles[i]
 
       // 根据title查找数据库中文章
-      const article = await models.Article.findOne({ title: siteArticle.title })
+      const article = await models.Article.findOne({ title: siteArticle.title }).execAsync();
 
       // 网站文章是否存在
       siteArticles[i].exists = !!article
@@ -119,7 +119,7 @@ module.exports = {
       let task
       if (article) {
         siteArticles[i].articleId = article._id
-        task = await models.Task.findOne({ platformId: platform._id, articleId: article._id })
+        task = await models.Task.findOne({ platformId: platform._id, articleId: article._id }).execAsync();
       }
 
       // 网站文章是否已关联
@@ -134,7 +134,7 @@ module.exports = {
   },
   importPlatformArticles: async (req, res) => {
     // 获取平台
-    const platform = await models.Platform.findOne({ _id: ObjectId(req.params.id) })
+    const platform = await models.Platform.findOne({ _id: ObjectId(req.params.id) }).execAsync();
 
     // 如果平台不存在，返回404错误
     if (!platform) {
@@ -162,7 +162,7 @@ module.exports = {
     })
   },
   checkPlatformCookieStatus: async (req, res) => {
-    const platforms = await models.Platform.find()
+    const platforms = await models.Platform.find().execAsync();
     for (let i = 0; i < platforms.length; i++) {
       const platform = platforms[i]
       const Spider = require(`../spiders/${platform.name}`)

@@ -1,6 +1,7 @@
-const mongoose = require('mongoose')
+const LinvoDB = require('linvodb3');
+var Promise = require("bluebird");
 
-const cookieSchema = new mongoose.Schema({
+const cookieSchema = {
     /** The domain of the cookie (e.g. "www.google.com", "example.com"). */
     domain: String,
     /** The name of the cookie. */
@@ -19,8 +20,10 @@ const cookieSchema = new mongoose.Schema({
     httpOnly: Boolean,
     /** True if the cookie is marked as Secure (i.e. its scope is limited to secure channels, typically HTTPS). */
     secure: Boolean,
-})
+}
 
-const Cookie = mongoose.model('cookies', cookieSchema)
+var Cookie = new LinvoDB('cookies', cookieSchema)
+Promise.promisifyAll(Cookie.find().__proto__);
+// const Cookie = mongoose.model('cookies', cookieSchema)
 
 module.exports = Cookie

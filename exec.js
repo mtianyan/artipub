@@ -30,7 +30,7 @@ class Runner {
             status: constants.status.NOT_STARTED,
             ready: true,
             checked: true
-          })
+          }).execAsync();
           if (!task) return
 
           logger.info('Publish task started')
@@ -46,7 +46,7 @@ class Runner {
     let errNum = 0
     let updateStatsCron
     while (errNum < 10) {
-      updateStatsCron = await models.Environment.findOne({ _id: constants.environment.UPDATE_STATS_CRON })
+      updateStatsCron = await models.Environment.findOne({ _id: constants.environment.UPDATE_STATS_CRON }).execAsync();
       if (!updateStatsCron) {
         await setTimeout(() => {}, 5000);
       } else {
@@ -64,7 +64,7 @@ class Runner {
               $ne: '',
               $exists: true
             }
-          })
+          }).execAsync();
           for (let i = 0; i < tasks.length; i++) {
             logger.info('Stats fetch task started')
             let task = await tasks[i]

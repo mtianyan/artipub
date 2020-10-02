@@ -9,7 +9,7 @@ module.exports = {
       let cookie = await models.Cookie.findOne({
         domain: c.domain,
         name: c.name
-      })
+      }).execAsync();
       if (cookie) {
         // 已存在该cookie
         for (let k in c) {

@@ -44,11 +44,12 @@ function createServerProcess() {
     });
 
   }
+  return serverProcess
 }
 const urlLoction = isDev
   ? "http://localhost:8000"
   : `file://${path.join(__dirname, "../index.html")}`;
-app.on('ready', () => {
+app.on('ready', (event) => {
   // 新建一个窗口
   let mainWindow = new BrowserWindow({
     titleBarStyle: 'hidden',
@@ -56,11 +57,31 @@ app.on('ready', () => {
     height: 956,
     webPreferences: {
       nodeIntegration: true,
+      enableRemoteModule: true
     },
+    show: false
   });
-  createServerProcess()
-  // 原有的项目开发环境下的 devServer 的端口是 3000 ，我们这里以 url 形式把原有项目加载进来
-  mainWindow.loadURL(urlLoction);
+  mainWindow.on('ready-to-show', function () {
+    mainWindow.show() // 初始化后再显示
+  })
+  const serverProcess = createServerProcess()
+  serverProcess.on('message', (msg) => {
+    console.log('Message from child', msg);
+    if(msg === "setPortSuccess"){
+      console.log("xxx")
+      const Conf = require('conf');
+      const config = new Conf();
+      apiEndpoint = config.get("url")
+      console.log(apiEndpoint)
+      // 原有的项目开发环境下的 devServer 的端口是 3000 ，我们这里以 url 形式把原有项目加载进来
+      mainWindow.loadURL(urlLoction);
+      mainWindow.webContents.once('dom-ready', () => {
+        mainWindow.webContents.send("api", apiEndpoint)
+        mainWindow.reload();
+      })
+
+    }
+  });
 });
 app.on('window-all-closed', () => {
   // 在 macOS 上，除非用户用 Cmd + Q 确定地退出，

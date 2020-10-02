@@ -1,6 +1,8 @@
-const mongoose = require('mongoose')
+const LinvoDB = require('linvodb3');
+var Promise = require("bluebird");
+// const mongoose = require('mongoose')
 
-const platformSchema = new mongoose.Schema({
+const platformSchema = {
   name: String,
   label: String,
   editorType: String,
@@ -16,8 +18,10 @@ const platformSchema = new mongoose.Schema({
 
   // 前端字段
   cookieStatus: String,
-})
+}
 
-const Platform = mongoose.model('platforms', platformSchema)
+// const Platform = mongoose.model('platforms', platformSchema)
+var Platform = new LinvoDB('platforms', platformSchema)
+Promise.promisifyAll(Platform.find().__proto__);
 
 module.exports = Platform

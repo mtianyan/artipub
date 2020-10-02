@@ -6,14 +6,14 @@ const path = require('path')
 
 module.exports = {
   getTaskList: async (req, res) => {
-    const tasks = await models.Task.find()
+    const tasks = await models.Task.find().execAsync();
     await res.json({
       status: 'ok',
       data: tasks
     })
   },
   getTask: async (req, res) => {
-    const task = await models.Task.findOne({ _id: ObjectId(req.params.id) })
+    const task = await models.Task.findOne({ _id: ObjectId(req.params.id) }).execAsync();
     await res.json({
       status: 'ok',
       data: task
@@ -23,7 +23,7 @@ module.exports = {
     for (let _task of req.body) {
       let task
       if (_task._id) {
-        task = await models.Task.findOne({ _id: ObjectId(_task._id) })
+        task = await models.Task.findOne({ _id: ObjectId(_task._id) }).execAsync();
         task.category = _task.category
         task.tag = _task.tag
         task.pubType = _task.pubType
@@ -73,7 +73,7 @@ module.exports = {
     })
   },
   editTask: async (req, res) => {
-    let task = await models.Task.findOne({ _id: ObjectId(req.params.id) })
+    let task = await models.Task.findOne({ _id: ObjectId(req.params.id) }).execAsync();
     if (!task) {
       return res.json({
         status: 'ok',
@@ -90,7 +90,7 @@ module.exports = {
     })
   },
   deleteTask: async (req, res) => {
-    let task = await models.Task.findOne({ _id: ObjectId(req.params.id) })
+    let task = await models.Task.findOne({ _id: ObjectId(req.params.id) }).execAsync();
     if (!task) {
       return res.json({
         status: 'ok',
@@ -104,7 +104,7 @@ module.exports = {
     })
   },
   publishTask: async (req, res) => {
-    let Task = await models.Task.findOne({ _id: ObjectId(req.params.id) })
+    let Task = await models.Task.findOne({ _id: ObjectId(req.params.id) }).execAsync();
     if (!Task) {
       return res.json({
         status: 'ok',

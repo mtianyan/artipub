@@ -6,7 +6,7 @@ const init = async () => {
   // 初始化平台数据
   for (let i = 0; i < data.platforms.length; i++) {
     const platform = data.platforms[i]
-    let platformDb = await models.Platform.findOne({ name: platform.name })
+    let platformDb = await models.Platform.findOne({ name: platform.name }).execAsync();
     if (!platformDb) {
       platformDb = new models.Platform(platform)
       await platformDb.save()

@@ -9,3 +9,4 @@ package-lock.json
 .umi/
 dist/
 dist_electron/
+db/

@@ -1,7 +1,8 @@
-const mongoose = require('mongoose')
+const LinvoDB = require('linvodb3');
+var Promise = require("bluebird");
 const ObjectId = require('bson').ObjectId
 
-const taskSchema = new mongoose.Schema({
+const taskSchema = {
   articleId: ObjectId,
   platformId: ObjectId,
   status: String,
@@ -24,8 +25,9 @@ const taskSchema = new mongoose.Schema({
 
   // 前端数据（不用设置）
   platform: Object,
-})
+}
 
-const Task = mongoose.model('tasks', taskSchema)
-
+// const Task = mongoose.model('tasks', taskSchema)
+var Task = new LinvoDB('tasks', taskSchema)
+Promise.promisifyAll(Task.find().__proto__);
 module.exports = Task
