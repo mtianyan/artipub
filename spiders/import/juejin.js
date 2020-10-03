@@ -78,14 +78,14 @@ class JuejinImportSpider extends BaseImportSpider {
 
         if (siteArticle.exists) {
             // 保存文章
-            const article = await models.Article.findOne({ _id: ObjectId(siteArticle.articleId) })
+            const article = await models.Article.findOne({ _id: ObjectId(siteArticle.articleId) }).execAsync();
             article.content = content
             article.contentHtml = this.converter.makeHtml(content)
             article.updateTs = new Date()
             await article.save()
 
             // 保存任务
-            const task = await models.Task.findOne({ platformId: this.platform._id, articleId: article._id })
+            const task = await models.Task.findOne({ platformId: this.platform._id, articleId: article._id }).execAsync();
             task.url = siteArticle.url
             task.status = constants.status.FINISHED
             task.updateTs = new Date()

@@ -84,7 +84,7 @@ module.exports = {
         error: 'not found'
       }, 404)
     }
-    await models.Article.remove({ _id: ObjectId(req.params.id) })
+    await models.Article.remove({ _id: ObjectId(req.params.id) }, {})
     await res.json({
       status: 'ok',
       data: req.body,

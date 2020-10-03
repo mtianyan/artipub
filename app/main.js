@@ -5,6 +5,7 @@ const { fork } = require('child_process');
 const path = require('path');
 const axios = require('axios');
 const menuTemplate = require("./menuTemplate");
+var spawn = require('child_process').spawn;
 
 var pids = []
 var platform = process.platform;
@@ -12,7 +13,7 @@ function killTask() {
   // try {
     if (platform === 'win32') {
       for (let pid of pids) {
-        childProcess.exec('taskkill /pid ' + pid + ' /T /F');
+        spawn("taskkill", ["/pid", pid, '/f', '/t']);
       }
       pids = [];
     } else {
@@ -80,6 +81,22 @@ app.on('ready', (event) => {
       })
     }
   });
+  // set the menu
+  const menu = Menu.buildFromTemplate(menuTemplate);
+  Menu.setApplicationMenu(menu);
+  if (process.platform === "darwin") {
+    let contents = mainWindow.webContents;
+    const localShortcut = require('electron-localshortcut');
+    localShortcut.register(mainWindow, "CommandOrControl+A", () => {
+      contents.selectAll();
+    });
+    localShortcut.register(mainWindow, "CommandOrControl+C", () =>{
+      contents.copy();
+    });
+    localShortcut.register(mainWindow, "CommandOrControl+V", () => {
+      contents.paste();
+    });
+  }
 });
 app.on('window-all-closed', () => {
   // 在 macOS 上，除非用户用 Cmd + Q 确定地退出，
@@ -89,9 +106,6 @@ app.on('window-all-closed', () => {
     app.quit();
   }
 });
-// set the menu
-const menu = Menu.buildFromTemplate(menuTemplate);
-Menu.setApplicationMenu(menu);
 
 ipcMain.on("open-settings-window", () => {
   const settingsWindowConfig = {

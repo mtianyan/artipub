@@ -1,23 +1,24 @@
-import React, { useEffect, useState,useReducer } from 'react';
+import React, { useEffect, useReducer, useState } from 'react';
 import { PageHeaderWrapper } from '@ant-design/pro-layout';
 import {
   Alert,
   Button,
   Card,
+  Checkbox,
+  Col,
   Divider,
   Drawer,
   Form,
   Input,
+  message,
   Modal,
+  Radio,
+  Row,
   Select,
   Spin,
   Table,
   Tag,
   Tooltip,
-  Radio,
-  Row,
-  Col,
-  message
 } from 'antd';
 import { Platform, PlatformModelState, SiteArticle } from '@/models/platform';
 import { ConnectProps, ConnectState, Dispatch } from '@/models/connect';
@@ -37,16 +38,21 @@ import imgCnblogs from '@/assets/img/cnblogs-logo.gif';
 import imgV2ex from '@/assets/img/v2ex-logo.jpg';
 import imgWechat from '@/assets/img/wechat-logo.jpg';
 import style from './PlatformList.scss';
+import JuejinSetting from '../Settings/JueJinSetting'
+import SegmentfaultSetting from "../Settings/SegmentfaultSetting";
+import ZhihuSetting from "../Settings/ZhihuSetting";
+import OschinaSetting from "../Settings/OschinaSetting";
+
 export interface PlatformListProps extends ConnectProps {
   platform: PlatformModelState;
   dispatch: Dispatch;
 }
+
 declare global {
   interface Window {
     require: any;
   }
 }
-
 
 
 const PlatformList: React.FC<PlatformListProps> = props => {
@@ -96,19 +102,19 @@ const PlatformList: React.FC<PlatformListProps> = props => {
   // };
 
   const onFieldChange: Function = (type: string, fieldName: string) => (ev: any) => {
-      const { currentPlatform } = platform;
-      if (currentPlatform) {
-        if (type === constants.inputType.INPUT) {
-          currentPlatform[fieldName] = ev.target.value;
-        } else if (type === constants.inputType.SELECT) {
-          currentPlatform[fieldName] = ev;
-        }
-        dispatch({
-          type: 'platform/saveCurrentPlatform',
-          payload: currentPlatform,
-        });
+    const { currentPlatform } = platform;
+    if (currentPlatform) {
+      if (type === constants.inputType.INPUT) {
+        currentPlatform[fieldName] = ev.target.value;
+      } else if (type === constants.inputType.SELECT) {
+        currentPlatform[fieldName] = ev;
       }
-    };
+      dispatch({
+        type: 'platform/saveCurrentPlatform',
+        payload: currentPlatform,
+      });
+    }
+  };
 
   const onModalCancel = () => {
     dispatch({
@@ -143,19 +149,19 @@ const PlatformList: React.FC<PlatformListProps> = props => {
   };
 
   const onFetch: Function = (d: Platform) => async () => {
-      await dispatch({
-        type: 'platform/saveFetchModalVisible',
-        payload: true,
-      });
-      await dispatch({
-        type: 'platform/fetchSiteArticles',
-        payload: d,
-      });
-      await dispatch({
-        type: 'platform/saveCurrentPlatform',
-        payload: d,
-      });
-    };
+    await dispatch({
+      type: 'platform/saveFetchModalVisible',
+      payload: true,
+    });
+    await dispatch({
+      type: 'platform/fetchSiteArticles',
+      payload: d,
+    });
+    await dispatch({
+      type: 'platform/saveCurrentPlatform',
+      payload: d,
+    });
+  };
 
   const onFetchModalCancel = () => {
     dispatch({
@@ -181,21 +187,21 @@ const PlatformList: React.FC<PlatformListProps> = props => {
   };
 
   const onAccount: Function = (d: Platform) => async () => {
-      await dispatch({
-        type: 'platform/saveAccountModalVisible',
-        payload: true,
-      });
-      await dispatch({
-        type: 'platform/saveCurrentPlatform',
-        payload: d,
-      });
-      TDAPP.onEvent('平台管理-打开账户设置')
-    };
+    await dispatch({
+      type: 'platform/saveAccountModalVisible',
+      payload: true,
+    });
+    await dispatch({
+      type: 'platform/saveCurrentPlatform',
+      payload: d,
+    });
+    TDAPP.onEvent('平台管理-打开账户设置')
+  };
 
-  const onLogin = (d) => {
+  const onLogin = d => {
     // 打开登录窗口
-    const ipcRenderer = window.require("electron").ipcRenderer;
-    ipcRenderer.send('login', {"platform": d})
+    const { ipcRenderer } = window.require('electron');
+    ipcRenderer.send('login', { platform: d })
   }
   const onAccountModalCancel = async () => {
     await dispatch({
@@ -314,18 +320,18 @@ const PlatformList: React.FC<PlatformListProps> = props => {
             </Tooltip>
           )
         }
-          if (d.name === constants.platform.WECHAT) {
-            return (
-              <Tooltip title="可以发布文章到该平台">
-                <Tag color="green">不需导入</Tag>
-              </Tooltip>
-            )
-          }
-            return (
-              <Tooltip title="请用登陆助手导入Cookie">
-                <Tag color="red">未导入</Tag>
-              </Tooltip>
-            );
+        if (d.name === constants.platform.WECHAT) {
+          return (
+            <Tooltip title="可以发布文章到该平台">
+              <Tag color="green">不需导入</Tag>
+            </Tooltip>
+          )
+        }
+        return (
+          <Tooltip title="请用登陆助手导入Cookie">
+            <Tag color="red">未导入</Tag>
+          </Tooltip>
+        );
       },
     },
     {
@@ -334,53 +340,53 @@ const PlatformList: React.FC<PlatformListProps> = props => {
       key: 'action',
       width: '180px',
       render: (text: string, d: Platform) => (
-          <div>
-            <Tooltip title="导入文章">
-              <Button
-                disabled={!d.enableImport}
-                type="primary"
-                shape="circle"
-                icon="import"
-                className={style.fetchBtn}
-                onClick={onFetch(d)}
-              />
-            </Tooltip>
-            <Tooltip title="设置登陆用户名密码">
-              <Button
-                disabled={!d.enableLogin}
-                type="default"
-                shape="circle"
-                icon="key"
-                className={style.loginBtn}
-                onClick={onAccount(d)}
-              />
-            </Tooltip>
-            <Tooltip title="打开浏览器登录">
-              <Button
-                type="default"
-                shape="circle"
-                icon="user"
-                className={style.settingBtn}
-                onClick={()=>onLogin(d)}
-              />
-            </Tooltip>
-            <Tooltip title="配置">
-              <Button
-                type="default"
-                shape="circle"
-                icon="setting"
-                className={style.settingBtn}
-                onClick={() => {
-                  setCurPlatform(d);
-                  setDrawerVisible(true)
-                }}
-              />
-            </Tooltip>
-            {/* <Popconfirm title="您确认删除该平台吗？" onConfirm={onDelete(d)}> */}
-            {/*  <Button type="danger" shape="circle" icon="delete" className={style.delBtn}/> */}
-            {/* </Popconfirm> */}
-          </div>
-        ),
+        <div>
+          {/*<Tooltip title="导入文章">*/}
+          {/*  <Button*/}
+          {/*    disabled={!d.enableImport}*/}
+          {/*    type="primary"*/}
+          {/*    shape="circle"*/}
+          {/*    icon="import"*/}
+          {/*    className={style.fetchBtn}*/}
+          {/*    onClick={onFetch(d)}*/}
+          {/*  />*/}
+          {/*</Tooltip>*/}
+          {/* <Tooltip title="设置登陆用户名密码"> */}
+          {/*  <Button */}
+          {/*    disabled={!d.enableLogin} */}
+          {/*    type="default" */}
+          {/*    shape="circle" */}
+          {/*    icon="key" */}
+          {/*    className={style.loginBtn} */}
+          {/*    onClick={onAccount(d)} */}
+          {/*  /> */}
+          {/* </Tooltip> */}
+          { window.navigator.userAgent.indexOf('Electron') === -1 ? <></>:<Tooltip title="打开浏览器登录">
+            <Button
+              type="default"
+              shape="circle"
+              icon="user"
+              className={style.settingBtn}
+              onClick={() => onLogin(d)}
+            />
+          </Tooltip>}
+          <Tooltip title="配置">
+            <Button
+              type="default"
+              shape="circle"
+              icon="setting"
+              className={style.settingBtn}
+              onClick={() => {
+                setCurPlatform(d);
+                setDrawerVisible(true)
+              }}
+            />
+          </Tooltip>
+          {/* <Popconfirm title="您确认删除该平台吗？" onConfirm={onDelete(d)}> */}
+          {/*  <Button type="danger" shape="circle" icon="delete" className={style.delBtn}/> */}
+          {/* </Popconfirm> */}
+        </div>
+      ),
     },
   ];
 
@@ -391,10 +397,10 @@ const PlatformList: React.FC<PlatformListProps> = props => {
       key: 'title',
       width: '400px',
       render: (text: string, d: SiteArticle) => (
-          <a href={d.url} target="_blank">
-            {text}
-          </a>
-        ),
+        <a href={d.url} target="_blank">
+          {text}
+        </a>
+      ),
     },
     {
       title: '存在状态',
@@ -405,7 +411,7 @@ const PlatformList: React.FC<PlatformListProps> = props => {
         if (d.exists) {
           return <Tag color="green">已存在</Tag>;
         }
-          return <Tag color="red">不存在</Tag>;
+        return <Tag color="red">不存在</Tag>;
       },
     },
     {
@@ -417,7 +423,7 @@ const PlatformList: React.FC<PlatformListProps> = props => {
         if (d.associated) {
           return <Tag color="green">已关联</Tag>;
         }
-          return <Tag color="red">未关联</Tag>;
+        return <Tag color="red">未关联</Tag>;
       },
     },
     {
@@ -469,25 +475,20 @@ const PlatformList: React.FC<PlatformListProps> = props => {
   const getTip = () => {
     if (platform.fetchLoading) {
       return '正在获取文章列表，需要大约15-60秒，请耐心等待...';
-    } if (platform.importLoading) {
+    }
+    if (platform.importLoading) {
       const articleNum = platform.siteArticles
         ? platform.siteArticles.filter(d => d.checked && (!d.exists || !d.associated)).length
         : 0;
       return `正在导入文章，需要大约${15 * articleNum}秒（每篇文章大约15秒），请耐心等待...`;
     }
-      return '';
+    return '';
   };
 
   const onUpdateCookieStatus = () => {
     dispatch({
       type: 'platform/updateCookieStatus',
-    }).then(value=>{
-      dispatch({
-        type: 'platform/fetchPlatformList',
-      });
-      forceUpdate()
-      message.success("刷新cookie状态成功")
-    });
+    })
   };
 
   useEffect(() => {
@@ -519,11 +520,124 @@ const PlatformList: React.FC<PlatformListProps> = props => {
   const onSecondCityChange = value => {
     setSecondCity(value)
   };
-
   const getForm = () => {
     if (curPlatform && curPlatform.name === 'segmentfault') {
+      return SegmentfaultSetting
+    }
+    if (curPlatform && curPlatform.name === 'zhihu') {
+      return ZhihuSetting
+    }
+    if (curPlatform && curPlatform.name == 'oschina') {
+      return OschinaSetting
+    }
+    if (curPlatform && curPlatform.name == 'jianshu') {
       return <Form>
         <Form.Item
+          label="文集"
+          name="footer"
+          rules={[{ required: true, message: '请选择一个文集' }]}
+        >
+          <Select
+            defaultValue={provinceData[0]}
+            style={{ minWidth: 120 }}
+            onChange={handleProvinceChange}
+          >
+            {provinceData.map(province => (
+              <Option key={province}>{province}</Option>
+            ))}
+          </Select>
+        </Form.Item>
+      </Form>
+    }
+    if (curPlatform && curPlatform.name == 'cnblogs') {
+      const remind = <span>提示： 请先在 <a href="https://i.cnblogs.com/Preferences.aspx#Editor">博客园配置</a> 页，设置编辑器为 "Markdown"</span>
+      return <Form>
+        <Alert message={remind} type="warning" />
+        <Form.Item
+          label="个人分类"
+          name="footer"
+          rules={[{ required: true, message: '请选择一个分类' }]}
+        >
+          <Select
+            defaultValue={provinceData[0]}
+            style={{ minWidth: 120 }}
+            onChange={handleProvinceChange}
+          >
+            {provinceData.map(province => (
+              <Option key={province}>{province}</Option>
+            ))}
+          </Select>
+        </Form.Item>
+        <Form.Item
+          label="发布选项"
+          name="footer"
+          rules={[{ required: true, message: '请选择一个分类' }]}
+        >
+          <Checkbox.Group style={{ width: '100%' }} onChange={() => {}}>
+            <Row>
+              <Col span={6}>
+                <Checkbox value="A">发布至首页候选区</Checkbox>
+              </Col>
+              <Col span={6}>
+                <Checkbox value="B">发布至博客园首页</Checkbox>
+              </Col>
+            </Row>
+          </Checkbox.Group>
+        </Form.Item>
+        <Form.Item
+          label="高级选项"
+          name="footer"
+          rules={[{ required: true, message: '请选择一个分类' }]}
+        >
+          <Checkbox.Group style={{ width: '100%' }} onChange={() => {}}>
+            <Row>
+              <Col span={3}>
+                <Checkbox value="A">发布</Checkbox>
+              </Col>
+              <Col span={6}>
+                <Checkbox value="B">显示在我的博客首页</Checkbox>
+              </Col>
+              <Col span={4}>
+                <Checkbox value="B">允许评论</Checkbox>
+              </Col>
+              <Col span={5}>
+                <Checkbox value="B">显示在RSS中</Checkbox>
+              </Col>
+              <Col span={5}>
+                <Checkbox value="B">只允许注册用户</Checkbox>
+              </Col>
+            </Row>
+          </Checkbox.Group>
+        </Form.Item>
+        <Form.Item
+          label="摘要"
+          name="footer"
+          rules={[{ required: true, message: '请输入话题' }]}
+        >
+          <Input.TextArea placeholder="请输入文章摘要"/>
+        </Form.Item>
+
+        <Form.Item
+          label="文章标签"
+          name="footer"
+          rules={[{ required: true, message: '' }]}
+        >
+          <Select
+            defaultValue={provinceData[0]}
+            style={{ minWidth: 120 }}
+            onChange={handleProvinceChange}
+          >
+            {provinceData.map(province => (
+              <Option key={province}>{province}</Option>
+            ))}
+          </Select>
+        </Form.Item>
+      </Form>
+    }
+    if (curPlatform && curPlatform.name == 'csdn') {
+     return <Form>
+        <Form.Item
+          required
           label="文章类型:"
           name="articleType"
           rules={[{ required: true, message: '请输入文章类型' }]}
@@ -535,16 +649,31 @@ const PlatformList: React.FC<PlatformListProps> = props => {
           </Radio.Group>
         </Form.Item>
         <Form.Item
+          required
           label="原文地址:"
           name="footer"
           rules={[{ required: true, message: '请输入原文地址:' }]}
         >
-          <Input />
+          <Input placeholder="请输入原文地址"/>
         </Form.Item>
+       <Form.Item
+         required
+         label="发布形式:"
+         name="articleType"
+         rules={[{ required: true, message: '请选择发布形式' }]}
+       >
+         <Radio.Group>
+           <Radio value="a">公开</Radio>
+           <Radio value="b">私密</Radio>
+           <Radio value="c">粉丝可见</Radio>
+           <Radio value="c">Vip可见</Radio>
+         </Radio.Group>
+       </Form.Item>
         <Form.Item
-          label="文章分类:"
+          required
+          label="个人分类:"
           name="footer"
-          rules={[{ required: true, message: '请输入文章分类:' }]}
+          rules={[{ required: true, message: '请输入个人分类:' }]}
         >
           <Row>
             <Col span={12}>
@@ -559,7 +688,7 @@ const PlatformList: React.FC<PlatformListProps> = props => {
               </Select>
             </Col>
             <Col span={12}><Select
-              style={{ paddingLeft:10, minWidth: 120 }}
+              style={{ paddingLeft: 10, minWidth: 120 }}
               value={secondCity}
               onChange={onSecondCityChange}
             >
@@ -571,26 +700,67 @@ const PlatformList: React.FC<PlatformListProps> = props => {
 
 
         </Form.Item>
+        <Form.Item
+          required
+          label="文章标签"
+          name="footer"
+          rules={[{ required: true, message: '' }]}
+        >
+          <Select
+            defaultValue={provinceData[0]}
+            style={{ minWidth: 120 }}
+            onChange={handleProvinceChange}
+          >
+            {provinceData.map(province => (
+              <Option key={province}>{province}</Option>
+            ))}
+          </Select>
+        </Form.Item>
+      </Form>
+    }
+    if (curPlatform && curPlatform.name == 'juejin') {
+      return JuejinSetting
+    }
+    if (curPlatform && curPlatform.name == constants.platform.TOUTIAO) {
+      return <Form>
+        <Form.Item
+          label="广告投放"
+          name="footer"
+          rules={[{ required: true, message: '请选择是否投放广告' }]}
+        >
+          <Checkbox.Group style={{ width: '100%' }} onChange={() => {}}>
+            <Row>
+              <Col span={4}>
+                <Checkbox value="A">投放头条广告</Checkbox>
+              </Col>
+              <Col span={4}>
+                <Checkbox value="B">不投放广告</Checkbox>
+              </Col>
+            </Row>
+          </Checkbox.Group>
+        </Form.Item>
       </Form>
     }
   }
   const getAlertMsg = () => {
     if (curPlatform && curPlatform.loggedIn) {
       return '已导入'
-    } if (curPlatform && curPlatform.name === constants.platform.WECHAT) {
+    }
+    if (curPlatform && curPlatform.name === constants.platform.WECHAT) {
       return '不需要导入'
     }
-      return '未导入'
+    return '未导入'
   }
   const getAlertType = () => {
     if (curPlatform && curPlatform.loggedIn) {
       return 'success'
-    } if (curPlatform && curPlatform.name === constants.platform.WECHAT) {
+    }
+    if (curPlatform && curPlatform.name === constants.platform.WECHAT) {
       return 'success'
     }
     return 'warning'
   }
-  const pageProps = window.navigator.userAgent.indexOf("Electron") !== -1 ? {
+  const pageProps = window.navigator.userAgent.indexOf('Electron') !== -1 ? {
     pageHeaderRender: false,
     title: false,
     // style: {display: 'none'}
@@ -629,7 +799,8 @@ const PlatformList: React.FC<PlatformListProps> = props => {
             name="footer"
             rules={[{ required: true, message: '请输入底部配置' }]}
           >
-            <Input.TextArea rows={4} placeholder={"> 本文由博客一文多发平台 [Artipub](https://github.com/crawlab-team/artipub) 发布！"}/>
+            <Input.TextArea rows={4}
+                            placeholder={'> 本文由博客一文多发平台 [Artipub](https://github.com/crawlab-team/artipub) 发布！'} />
           </Form.Item>
         </Form>
       </Drawer>
@@ -692,9 +863,9 @@ const PlatformList: React.FC<PlatformListProps> = props => {
             dataSource={
               platform.siteArticles
                 ? platform.siteArticles.map((d: SiteArticle) => ({
-                    key: d.url,
-                    ...d,
-                  }))
+                  key: d.url,
+                  ...d,
+                }))
                 : []
             }
             columns={siteArticlesColumns}
@@ -737,7 +908,9 @@ const PlatformList: React.FC<PlatformListProps> = props => {
           更新Cookie状态
         </Button>
       </div>
-      {window.navigator.userAgent.indexOf("Electron") === -1?<Card><Table  dataSource={dataSource} columns={columns} /></Card>:<Table dataSource={platform.platforms} columns={columns} />}
+      {window.navigator.userAgent.indexOf('Electron') === -1 ?
+        <Card><Table dataSource={dataSource} columns={columns} /></Card> :
+        <Table dataSource={platform.platforms} columns={columns} />}
     </PageHeaderWrapper>
   );
 };

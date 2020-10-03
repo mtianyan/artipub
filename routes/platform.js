@@ -4,9 +4,11 @@ const ObjectId = (id)=>{
 }
 const constants = require('../constants')
 const models = require('../models')
+const axios = require('axios');
 
 const getCookieStatus = async (platform) => {
-  const cookies = await models.Cookie.find({ domain: { $regex: platform.name } })
+  const cookies = await models.Cookie.find({ domain: { $regex: platform.name } }).execAsync();
+  // console.log("cookies", cookies)
   if (!cookies || !cookies.length) return constants.cookieStatus.NO_COOKIE
   return constants.cookieStatus.EXISTS
 }
@@ -15,7 +17,9 @@ module.exports = {
   getPlatformList: async (req, res) => {
     const platforms = await models.Platform.find().execAsync();
     for (let i = 0; i < platforms.length; i++) {
-      platforms[i].cookieStatus = await getCookieStatus(platforms[i])
+      let cookieStatus = await getCookieStatus(platforms[i])
+      console.log(cookieStatus)
+      platforms[i].cookieStatus = cookieStatus
     }
     await res.json({
       status: 'ok',
@@ -166,18 +170,50 @@ module.exports = {
   },
   checkPlatformCookieStatus: async (req, res) => {
     const platforms = await models.Platform.find().execAsync();
+    let allRequest = []
     for (let i = 0; i < platforms.length; i++) {
       const platform = platforms[i]
       const Spider = require(`../spiders/${platform.name}`)
       const spider = new Spider(null, platform._id.toString())
-      try {
-        await spider.checkCookieStatus()
-      } catch (e) {
-        console.error(e)
-      }
+      allRequest.push(spider.checkCookieStatus())
     }
-    await res.json({
-      status: 'ok'
+    axios.all(allRequest).then(async resList => {
+      for (let i = 0; i < resList.length; i++) {
+        let platform = platforms[i]
+        // console.log(platform.url)
+        // console.log(platform.name)
+        if(platform.name === constants.platform.TOUTIAO){
+          console.log(resList[i].data)
+        }
+        let text = resList[i].data;
+        if (platform.name === constants.platform.TOUTIAO) {
+          platform.loggedIn = text.includes('/pgc-image/');
+        } else if (platform.name === constants.platform.CSDN) {
+          text = text.message;
+          platform.loggedIn = text.includes('成功');
+        } else if (platform.name === constants.platform.JIANSHU) {
+          platform.loggedIn = text.includes('current_user');
+        } else if (platform.name === constants.platform.CNBLOGS) {
+          platform.loggedIn = text.hasOwnProperty('spaceUserId');
+        } else if (platform.name === constants.platform.SEGMENTFAULT) {
+          platform.loggedIn = text.includes('user_id');
+        } else if (platform.name === constants.platform.OSCHINA) {
+
+          platform.loggedIn = text.includes('开源豆');
+        } else if (platform.name === constants.platform.V2EX) {
+          platform.loggedIn = text.includes('登出');
+        } else if (platform.name === constants.platform.ZHIHU) {
+          platform.loggedIn = text.hasOwnProperty('name');
+        } else {
+          platform.loggedIn = !text.includes('登录');
+        }
+        console.log(platform.loggedIn);
+        platform.save();
+      }
+      await res.json({
+        status: 'ok'
+      })
     })
+
   }
 }

@@ -5,6 +5,7 @@ const BaseSpider = require('../base')
 const globalConfig = require('../../config')
 const config = require('../config')
 const logger = require('../../logger')
+const constants = require('../../constants');
 
 showdown.setOption('tables', true)
 showdown.setOption('tasklists', true)
@@ -21,7 +22,7 @@ class BaseImportSpider extends BaseSpider {
 
   async init() {
     // 平台
-    this.platform = await models.Platform.findOne({ name: this.platformName })
+    this.platform = await models.Platform.findOne({ name: this.platformName }).execAsync();
 
     // PCR
     this.pcr = await PCR({
@@ -34,7 +35,7 @@ class BaseImportSpider extends BaseSpider {
     })
 
     // 是否开启chrome浏览器调试
-    const enableChromeDebugEnv = await models.Environment.findOne({_id: constants.environment.ENABLE_CHROME_DEBUG})
+    const enableChromeDebugEnv = await models.Environment.findOne({_id: constants.environment.ENABLE_CHROME_DEBUG}).execAsync();
     const enableChromeDebug = enableChromeDebugEnv.value
 
     // 浏览器

@@ -23,7 +23,7 @@ const getApi = () => {
       });
     }
     else {
-      apiEndpoint = "http://127.0.0.1:3007"
+      apiEndpoint = "http://127.0.0.1:3000"
     }
   }
   // alert(apiEndpoint)

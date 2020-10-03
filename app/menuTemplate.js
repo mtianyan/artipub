@@ -1,20 +1,21 @@
 const { app, shell, ipcMain } = require('electron');
 
 const Store = require('electron-store');
+
 const settingsStore = new Store({ name: 'Settings' });
 
 
-let template = [
-  {
-    label: '启动设置',
-    submenu: [{
-      label: '数据库设置',
-      accelerator: 'CmdOrCtrl+,',
-      click: () => {
-        ipcMain.emit('open-settings-window');
-      },
-    }],
-  },
+const template = [
+  // {
+  //   label: '启动设置',
+  //   submenu: [{
+  //     label: '数据库设置',
+  //     accelerator: 'CmdOrCtrl+,',
+  //     click: () => {
+  //       ipcMain.emit('open-settings-window');
+  //     },
+  //   }],
+  // },
   {
     label: '视图',
     submenu: [
@@ -32,9 +33,8 @@ let template = [
         accelerator: (() => {
           if (process.platform === 'darwin') {
             return 'Ctrl+Command+F';
-          } else {
-            return 'F11';
           }
+            return 'F11';
         })(),
         click: (item, focusedWindow) => {
           if (focusedWindow) {
@@ -47,10 +47,9 @@ let template = [
         accelerator: (function () {
           if (process.platform === 'darwin') {
             return 'Alt+Command+I';
-          } else {
-            return 'Ctrl+Shift+I';
           }
-        })(),
+            return 'Ctrl+Shift+I';
+        }()),
         click: (item, focusedWindow) => {
           if (focusedWindow) {
             focusedWindow.toggleDevTools();
@@ -77,9 +76,9 @@ let template = [
     role: 'help',
     submenu: [
       {
-        label: '学习更多',
+        label: '开发者主页',
         click: () => {
-          shell.openExternal('');
+          shell.openExternal('https://github.com/mtianyan');
         },
       },
     ],
@@ -95,13 +94,17 @@ if (process.platform === 'darwin') {
       role: 'about',
     }, {
       type: 'separator',
-    }, {
-      label: '设置',
-      accelerator: 'Command+,',
-      click: () => {
-        ipcMain.emit('open-settings-window');
-      },
-    }, {
+    },
+
+      //   {
+      //   label: '设置',
+      //   accelerator: 'Command+,',
+      //   click: () => {
+      //     ipcMain.emit('open-settings-window');
+      //   },
+      // },
+
+      {
       label: '服务',
       role: 'services',
       submenu: [],
@@ -129,13 +132,13 @@ if (process.platform === 'darwin') {
     }],
   });
 } else {
-  template[0].submenu.push({
-    label: '设置',
-    accelerator: 'Ctrl+,',
-    click: () => {
-      ipcMain.emit('open-settings-window')
-    }
-  })
+  // template[0].submenu.push({
+  //   label: '设置',
+  //   accelerator: 'Ctrl+,',
+  //   click: () => {
+  //     ipcMain.emit('open-settings-window');
+  //   },
+  // });
 }
 
-module.exports = template
+module.exports = template;

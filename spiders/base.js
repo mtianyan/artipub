@@ -21,19 +21,19 @@ class BaseSpider {
 
   async init() {
     // 任务
-    this.task = await models.Task.findOne({ _id: ObjectId(this.taskId) });
+    this.task = await models.Task.findOne({ _id: ObjectId(this.taskId) }).execAsync();
     if (!this.task) {
       throw new Error(`task (ID: ${this.taskId}) cannot be found`);
     }
 
     // 文章
-    this.article = await models.Article.findOne({ _id: this.task.articleId });
+    this.article = await models.Article.findOne({ _id: this.task.articleId }).execAsync();;
     if (!this.article) {
       throw new Error(`article (ID: ${this.task.articleId.toString()}) cannot be found`);
     }
 
     // 平台
-    this.platform = await models.Platform.findOne({ _id: this.task.platformId });
+    this.platform = await models.Platform.findOne({ _id: this.task.platformId }).execAsync();;
     if (!this.platform) {
       throw new Error(`platform (ID: ${this.task.platformId.toString()}) cannot be found`);
     }
@@ -108,7 +108,7 @@ class BaseSpider {
 
   async initForCookieStatus() {
     // platform
-    this.platform = await models.Platform.findOne({ _id: ObjectId(this.platformId) });
+    this.platform = await models.Platform.findOne({ _id: ObjectId(this.platformId) }).execAsync();;
 
     // PCR
     this.pcr = await PCR({
@@ -185,7 +185,7 @@ class BaseSpider {
    * 设置Cookie
    */
   async setCookies() {
-    const cookies = await models.Cookie.find({ domain: { $regex: this.platform.name } });
+    const cookies = await models.Cookie.find({ domain: { $regex: this.platform.name } }).execAsync();
     for (let i = 0; i < cookies.length; i++) {
       const c = cookies[i];
       await this.page.setCookie({
@@ -200,11 +200,14 @@ class BaseSpider {
    * 获取可给axios 使用的cookie
    */
   async getCookiesForAxios() {
-    const cookies = await models.Cookie.find({ domain: { $regex: this.platform.name } });
+    let cookies = await models.Cookie.find({ domain: { $regex: this.platform.name } }).execAsync();
+    if(this.platform.name == constants.platform.TOUTIAO){
+       cookies = await models.Cookie.find({ domain: {$in: ['.toutiao.com', 'www.toutiao.com', '.www.toutiao.com']}}).execAsync();
+    }
     let cookieStr = '';
     for (let i = 0; i < cookies.length; i++) {
       const c = cookies[i];
-      cookieStr += `${c.name}=${c.value};`;
+      cookieStr += `${c.name}=${c.value}; `;
     }
     return cookieStr;
   }
@@ -390,7 +393,7 @@ class BaseSpider {
    */
   async afterFetchStats() {
     // 统计文章总阅读、点赞、评论数
-    const tasks = await models.Task.find({ articleId: this.article._id });
+    const tasks = await models.Task.find({ articleId: this.article._id }).execAsync();
     let readNum = 0;
     let likeNum = 0;
     let commentNum = 0;
@@ -428,7 +431,7 @@ class BaseSpider {
    */
   async checkCookieStatus() {
     // platform
-    this.platform = await models.Platform.findOne({ _id: ObjectId(this.platformId) });
+    this.platform = await models.Platform.findOne({ _id: ObjectId(this.platformId) }).execAsync();
 
     const cookie = await this.getCookiesForAxios();
     let url = this.platform.url;
@@ -436,39 +439,18 @@ class BaseSpider {
       url = 'https://me.csdn.net/api/user/getUserPrivacy';
     } else if (this.platform.name === constants.platform.CNBLOGS) {
       url = 'https://account.cnblogs.com/user/userinfo';
+    } else if (this.platform.name === constants.platform.ZHIHU) {
+      url = 'https://www.zhihu.com/api/v4/me?include=ad_type%2Cavailable_message_types%2Cdefault_notifications_count%2Cfollow_notifications_count%2Cvote_thank_notifications_count%2Cmessages_count%2Cdraft_count%2Cemail%2Caccount_status%2Cis_bind_phone%2Cfollowing_question_count%2Cis_force_renamed%2Crenamed_fullname'
     }
-    axios.get(url, {
-        headers: {
-          'Cookie': cookie,
-        },
+    const headerValue = {
+      'Cookie': cookie,
+      'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36',
+    }
+    console.log(url)
+    console.log(headerValue)
+    return axios.get(url, {
+        headers: headerValue
       })
-      .then(async res => {
-        console.log(url);
-        let text = res.data;
-        if (this.platform.name === constants.platform.TOUTIAO) {
-          this.platform.loggedIn = text.includes('/pgc-image/');
-        } else if (this.platform.name === constants.platform.CSDN) {
-          text = text.message;
-          this.platform.loggedIn = text.includes('成功');
-        } else if (this.platform.name === constants.platform.JIANSHU) {
-          this.platform.loggedIn = text.includes('current_user');
-        } else if (this.platform.name === constants.platform.CNBLOGS) {
-          this.platform.loggedIn = text.includes('spaceUserId');
-        } else if (this.platform.name === constants.platform.SEGMENTFAULT) {
-          this.platform.loggedIn = text.includes('user_id');
-        } else if (this.platform.name === constants.platform.OSCHINA) {
-          this.platform.loggedIn = text.includes('开源豆');
-        } else if (this.platform.name === constants.platform.V2EX) {
-          this.platform.loggedIn = text.includes('登出');
-        } else {
-          this.platform.loggedIn = !text.includes('登录');
-        }
-        console.log(this.platform.loggedIn);
-        this.platform.save();
-      }).catch(error => {
-        this.platform.loggedIn = false;
-        this.platform.save();
-      });
   }
 }
 

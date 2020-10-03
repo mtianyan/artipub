@@ -15,19 +15,19 @@ const path = require('path');
 class WechatSpider extends BaseSpider {
   async init() {
     // 任务
-    this.task = await models.Task.findOne({ _id: ObjectId(this.taskId) });
+    this.task = await models.Task.findOne({ _id: ObjectId(this.taskId) }).execAsync();
     if (!this.task) {
       throw new Error(`task (ID: ${this.taskId}) cannot be found`);
     }
 
     // 文章
-    this.article = await models.Article.findOne({ _id: this.task.articleId });
+    this.article = await models.Article.findOne({ _id: this.task.articleId }).execAsync();
     if (!this.article) {
       throw new Error(`article (ID: ${this.task.articleId.toString()}) cannot be found`);
     }
 
     // 平台
-    this.platform = await models.Platform.findOne({ _id: this.task.platformId });
+    this.platform = await models.Platform.findOne({ _id: this.task.platformId }).execAsync();
     if (!this.platform) {
       throw new Error(`platform (ID: ${this.task.platformId.toString()}) cannot be found`);
     }
@@ -72,12 +72,12 @@ class WechatSpider extends BaseSpider {
   }
 
   async getAccessToken() {
-    let token = await models.Token.findOne({ platformName: constants.platform.WECHAT });
+    let token = await models.Token.findOne({ platformName: constants.platform.WECHAT }).execAsync();
     if (!token || token.expiresTs < (new Date())) {
       logger.info('fetching access token');
       // 如果没有token或者token过期了
-      const appIdEnv = await models.Environment.findOne({ _id: constants.environment.WECHAT_APP_ID });
-      const appSecretEnv = await models.Environment.findOne({ _id: constants.environment.WECHAT_APP_SECRET });
+      const appIdEnv = await models.Environment.findOne({ _id: constants.environment.WECHAT_APP_ID }).execAsync();
+      const appSecretEnv = await models.Environment.findOne({ _id: constants.environment.WECHAT_APP_SECRET }).execAsync();
       const response = await request.get(`${this.config.urls.apiEndpoint}/token?grant_type=client_credential&appid=${appIdEnv.value}&secret=${appSecretEnv.value}`);
       const data = JSON.parse(response);
       if (data.access_token) {

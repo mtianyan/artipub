@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {PageHeaderWrapper} from '@ant-design/pro-layout';
 import {Badge, Button, Card, Form, Input, message, Modal, Popconfirm, Select, Table, Tag, Tooltip} from 'antd';
 import {Article, ArticleModelState} from '@/models/article';
@@ -25,12 +25,14 @@ import imgV2ex from '@/assets/img/v2ex-logo.jpg';
 import imgWechat from '@/assets/img/wechat-logo.jpg';
 import juejin from "@/data/juejin";
 import v2ex from "@/data/v2ex";
+import JuejinSetting from "../Settings/JueJinSetting";
+import SegmentfaultSetting from "../Settings/SegmentfaultSetting";
+
 declare global {
   interface Window {
     require: any;
   }
 }
-
 
 
 export interface ArticleListProps extends ConnectProps {
@@ -147,13 +149,13 @@ const ArticleList: React.FC<ArticleListProps> = props => {
 
   const onTaskViewArticle: Function = (t: Task) => {
     return () => {
-      if(window.navigator.userAgent.indexOf("Electron") === -1){
+      if (window.navigator.userAgent.indexOf("Electron") === -1) {
         window.open(t.url);
 
         TDAPP.onEvent('文章管理-查看文章原文');
-      }else {
+      } else {
         const ipcRenderer = window.require("electron").ipcRenderer;
-        ipcRenderer.send('preview', {'url':t.url});
+        ipcRenderer.send('preview', {'url': t.url});
       }
     };
   };
@@ -494,34 +496,34 @@ const ArticleList: React.FC<ArticleListProps> = props => {
         return el;
       },
     },
-    {
-      title: '验证方式',
-      dataIndex: '_id',
-      width: '150px',
-      render: (text: string, p: Platform) => {
-        const t: Task = task.tasks.filter((t: Task) => t.platformId === p._id)[0];
-        if (!t) return <div />;
-        return (
-          <Button.Group>
-            <Button
-              type={t.authType === constants.authType.LOGIN ? 'primary' : 'default'}
-              size="small"
-              onClick={onSelectAuthType(t, constants.authType.LOGIN)}
-              disabled={t.platform ? !t.platform.enableLogin : false}
-            >
-              登陆
-            </Button>
-            <Button
-              type={t.authType === constants.authType.COOKIE ? 'primary' : 'default'}
-              size="small"
-              onClick={onSelectAuthType(t, constants.authType.COOKIE)}
-            >
-              Cookie
-            </Button>
-          </Button.Group>
-        );
-      },
-    },
+    // {
+    //   title: '验证方式',
+    //   dataIndex: '_id',
+    //   width: '150px',
+    //   render: (text: string, p: Platform) => {
+    //     const t: Task = task.tasks.filter((t: Task) => t.platformId === p._id)[0];
+    //     if (!t) return <div />;
+    //     return (
+    //       <Button.Group>
+    //         <Button
+    //           type={t.authType === constants.authType.LOGIN ? 'primary' : 'default'}
+    //           size="small"
+    //           onClick={onSelectAuthType(t, constants.authType.LOGIN)}
+    //           disabled={t.platform ? !t.platform.enableLogin : false}
+    //         >
+    //           登陆
+    //         </Button>
+    //         <Button
+    //           type={t.authType === constants.authType.COOKIE ? 'primary' : 'default'}
+    //           size="small"
+    //           onClick={onSelectAuthType(t, constants.authType.COOKIE)}
+    //         >
+    //           Cookie
+    //         </Button>
+    //       </Button.Group>
+    //     );
+    //   },
+    // },
     {
       title: '数据统计',
       dataIndex: 'key',
@@ -584,6 +586,22 @@ const ArticleList: React.FC<ArticleListProps> = props => {
     TDAPP.onEvent('文章管理-访问页面');
   }, []);
 
+  const provinceData = ['开发语言', '前端开发'];
+  const cityData = {
+    开发语言: ['java', 'Python', 'C++'],
+    前端开发: ['html', 'css'],
+  };
+
+  const [cities, setCities] = useState(cityData[provinceData[0]]);
+  const [secondCity, setSecondCity] = useState(cityData[provinceData[0]][0]);
+  const handleProvinceChange = value => {
+    setCities(cityData[value])
+    setSecondCity(cityData[value][0])
+  };
+  const onSecondCityChange = value => {
+    setSecondCity(value)
+  };
+
   // 平台配置
   let platformContent = <div></div>;
   const currentPlatform = platform.platforms
@@ -593,7 +611,7 @@ const ArticleList: React.FC<ArticleListProps> = props => {
     : undefined;
   const currentTask = task.tasks.filter((t: Task) => t.platformId === (currentPlatform ? currentPlatform._id : ''))[0];
   let platformCommonContent = (
-    <Form labelCol={{sm: {span: 4}}} wrapperCol={{sm: {span: 20}}}>
+    <Form>
       <Form.Item label="标题">
         <Input
           value={currentTask ? currentTask.title : ''}
@@ -604,61 +622,13 @@ const ArticleList: React.FC<ArticleListProps> = props => {
     </Form>
   );
   if (currentPlatform && currentPlatform.name === constants.platform.JUEJIN) {
-    const categories = [
-      '前端',
-      '后端',
-      'Android',
-      'iOS',
-      '人工智能',
-      '开发工具',
-      '代码人生',
-      '阅读',
-    ];
-    const tags = juejin.tags.sort((a: string, b: string) => a > b ? 1 : -1);
-    platformContent = (
-      <Form labelCol={{sm: {span: 4}}} wrapperCol={{sm: {span: 20}}}>
-        <Form.Item label="类别" required={true}>
-          <Select
-            placeholder="点击选择类别"
-            value={task.currentTask ? task.currentTask.category : undefined}
-            onChange={onTaskChange('select', 'category')}
-          >
-            {categories.map(category => (
-              <Select.Option key={category}>{category}</Select.Option>
-            ))}
-          </Select>
-        </Form.Item>
-        <Form.Item label="标签" required={true}>
-          <Select
-            placeholder="点击选择标签"
-            value={task.currentTask ? task.currentTask.tag : undefined}
-            onChange={onTaskChange('select', 'tag')}
-            showSearch
-            filterOption={(input: string, option: any) =>
-              option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-            }
-          >
-            {tags.map(tag => (
-              <Select.Option key={tag}>{tag}</Select.Option>
-            ))}
-          </Select>
-        </Form.Item>
-      </Form>
-    );
-  } else if (currentPlatform && currentPlatform.name === constants.platform.SEGMENTFAULT) {
-    platformContent = (
-      <Form labelCol={{sm: {span: 4}}} wrapperCol={{sm: {span: 20}}}>
-        <Form.Item label="标签" required={true}>
-          <Input
-            placeholder="输入标签（用逗号分割）"
-            value={task.currentTask ? task.currentTask.tag : undefined}
-            onChange={onTaskChange('input', 'tag')}
-          />
-        </Form.Item>
-      </Form>
-    );
-  } else if (currentPlatform && currentPlatform.name === constants.platform.JIANSHU) {
-  } else if (currentPlatform && currentPlatform.name === constants.platform.CSDN) {
+    platformContent = JuejinSetting
+  }
+  else if (currentPlatform && currentPlatform.name === constants.platform.SEGMENTFAULT) {
+    platformContent = SegmentfaultSetting
+  }
+  else if (currentPlatform && currentPlatform.name === constants.platform.JIANSHU) {}
+  else if (currentPlatform && currentPlatform.name === constants.platform.CSDN) {
     const categories = [
       {value: '1', label: '原创'},
       {value: '2', label: '转载'},
@@ -696,7 +666,8 @@ const ArticleList: React.FC<ArticleListProps> = props => {
         </Form.Item>
       </Form>
     );
-  } else if (currentPlatform && currentPlatform.name === constants.platform.ZHIHU) {
+  }
+  else if (currentPlatform && currentPlatform.name === constants.platform.ZHIHU) {
     platformContent = (
       <Form labelCol={{sm: {span: 4}}} wrapperCol={{sm: {span: 20}}}>
         <Form.Item label="话题">
@@ -708,7 +679,8 @@ const ArticleList: React.FC<ArticleListProps> = props => {
         </Form.Item>
       </Form>
     );
-  } else if (currentPlatform && currentPlatform.name === constants.platform.OSCHINA) {
+  }
+  else if (currentPlatform && currentPlatform.name === constants.platform.OSCHINA) {
     const categories = [
       '移动开发',
       '前端开发',
@@ -743,7 +715,8 @@ const ArticleList: React.FC<ArticleListProps> = props => {
         </Form.Item>
       </Form>
     );
-  } else if (currentPlatform && currentPlatform.name === constants.platform.V2EX) {
+  }
+  else if (currentPlatform && currentPlatform.name === constants.platform.V2EX) {
     const categories = v2ex.categories;
     platformContent = (
       <Form labelCol={{sm: {span: 4}}} wrapperCol={{sm: {span: 20}}}>
@@ -765,6 +738,7 @@ const ArticleList: React.FC<ArticleListProps> = props => {
       </Form>
     );
   }
+
   const pageProps = window.navigator.userAgent.indexOf("Electron") !== -1 ? {
     pageHeaderRender: false,
     title: false,
@@ -779,6 +753,13 @@ const ArticleList: React.FC<ArticleListProps> = props => {
         width="1000px"
         okText="发布"
         onOk={onArticleTasksPublish()}
+        footer={[
+          // 定义右下角 按钮的地方 可根据需要使用 一个或者 2个按钮
+          <Button key="back" onClick={onArticleTasksModalCancel}>取消</Button>,
+          <Button key="submit" type="primary" onClick={onArticleTasksPublish()}>安全发布</Button>,
+          <Button key="submit" type="primary" onClick={onArticleTasksPublish()}>极速发布</Button>
+          ]}
+
       >
         <Table
           dataSource={
@@ -810,7 +791,9 @@ const ArticleList: React.FC<ArticleListProps> = props => {
           创建文章
         </Button>
       </div>
-      {window.navigator.userAgent.indexOf("Electron") === -1? <Card><Table dataSource={article.articles} columns={articleColumns} /></Card>:<Table dataSource={article.articles} columns={articleColumns} />}
+      {window.navigator.userAgent.indexOf("Electron") === -1 ?
+        <Card><Table dataSource={article.articles} columns={articleColumns} /></Card> :
+        <Table dataSource={article.articles} columns={articleColumns} />}
     </PageHeaderWrapper>
   );
 };
