@@ -42,6 +42,8 @@ import JuejinSetting from '../Settings/JueJinSetting'
 import SegmentfaultSetting from "../Settings/SegmentfaultSetting";
 import ZhihuSetting from "../Settings/ZhihuSetting";
 import OschinaSetting from "../Settings/OschinaSetting";
+import request from "umi-request";
+const axios = require('axios');
 
 export interface PlatformListProps extends ConnectProps {
   platform: PlatformModelState;
@@ -316,7 +318,7 @@ const PlatformList: React.FC<PlatformListProps> = props => {
         if (d.loggedIn) {
           return (
             <Tooltip title="可以发布文章到该平台">
-              <Tag color="green">已导入</Tag>
+              <Tag color="green">已认证</Tag>
             </Tooltip>
           )
         }
@@ -528,6 +530,27 @@ const PlatformList: React.FC<PlatformListProps> = props => {
       return ZhihuSetting
     }
     if (curPlatform && curPlatform.name == 'oschina') {
+      alert(curPlatform.cookieStr)
+      const headerValue = {
+        'sec-ch-ua': '"\\Not;A"Brand";v="99", "Google Chrome";v="85", "Chromium";v="85"',
+        'DNT': '1',
+        'sec-ch-ua-mobile': '?0',
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36',
+        'Accept': '*/*',
+        'Sec-Fetch-Site': 'none',
+        'Sec-Fetch-Mode': 'cors',
+        'Sec-Fetch-Dest': 'empty',
+        'Accept-Language': 'en-US,en;q=0.9,zh-US;q=0.8,zh;q=0.7,zh-CN;q=0.6,pt-BR;q=0.5,pt;q=0.4',
+        'Cookie': curPlatform.cookieStr
+      }
+      let url = `https://my.oschina.net/u/${curPlatform.userCode}/blog/write`
+      alert("123")
+      axios.get(url, {
+        headers: headerValue,
+        withCredentials: true,
+        changeOrigin: true,
+        Referer: ''
+      })
       return OschinaSetting
     }
     if (curPlatform && curPlatform.name == 'jianshu') {

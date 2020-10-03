@@ -18,5 +18,8 @@
     "http://*/*",
     "https://*/*",
     "storage"
+  ],
+  "web_accessible_resources":[
+    "icon.png"
   ]
 }

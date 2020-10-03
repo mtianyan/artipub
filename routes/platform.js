@@ -13,6 +13,18 @@ const getCookieStatus = async (platform) => {
   return constants.cookieStatus.EXISTS
 }
 
+const getOnePlatformCookies = async (platformName)=> {
+  let cookies = await models.Cookie.find({ domain: { $regex: platformName } }).execAsync();
+  if(platformName == constants.platform.TOUTIAO){
+    cookies = await models.Cookie.find({ domain: {$in: ['.toutiao.com', 'www.toutiao.com', '.www.toutiao.com']}}).execAsync();
+  }
+  let cookieStr = '';
+  for (let i = 0; i < cookies.length; i++) {
+    const c = cookies[i];
+    cookieStr += `${c.name}=${c.value}; `;
+  }
+  return cookieStr;
+}
 module.exports = {
   getPlatformList: async (req, res) => {
     const platforms = await models.Platform.find().execAsync();
@@ -20,6 +32,7 @@ module.exports = {
       let cookieStatus = await getCookieStatus(platforms[i])
       console.log(cookieStatus)
       platforms[i].cookieStatus = cookieStatus
+      platforms[i].cookieStr = await getOnePlatformCookies(platforms.name)
     }
     await res.json({
       status: 'ok',
@@ -177,7 +190,19 @@ module.exports = {
       const spider = new Spider(null, platform._id.toString())
       allRequest.push(spider.checkCookieStatus())
     }
-    axios.all(allRequest).then(async resList => {
+    const promisesResolved = allRequest.map(promise => promise.catch(error => ({ error })))
+    function checkFailed (then) {
+      return function (responses) {
+        const someFailed = responses.some(response => response.error)
+
+        if (someFailed) {
+          throw responses
+        }
+
+        return then(responses)
+      }
+    }
+    axios.all(promisesResolved).then(checkFailed(async resList => {
       for (let i = 0; i < resList.length; i++) {
         let platform = platforms[i]
         // console.log(platform.url)
@@ -198,7 +223,10 @@ module.exports = {
         } else if (platform.name === constants.platform.SEGMENTFAULT) {
           platform.loggedIn = text.includes('user_id');
         } else if (platform.name === constants.platform.OSCHINA) {
-
+          console.log(text)
+          let re = /<val data-name="g_user_id" data-value="(\S*)"/;
+          let userCode = text.match(re)[1];
+          platform.userCode = userCode;
           platform.loggedIn = text.includes('开源豆');
         } else if (platform.name === constants.platform.V2EX) {
           platform.loggedIn = text.includes('登出');
@@ -213,7 +241,26 @@ module.exports = {
       await res.json({
         status: 'ok'
       })
-    })
+    })).catch(async errList =>{
+      for (let i = 0; i < errList.length; i++) {
+        if(errList[i].hasOwnProperty("error")){
+          let curErrPlatUrl = errList[i].error.config.url
+          let platform = await models.Platform.findOne({ url: curErrPlatUrl }).execAsync();
+          if(!platform){
+            if (curErrPlatUrl.includes(constants.platform.CSDN)) {
+              platform = await models.Platform.findOne({ name: constants.platform.CSDN }).execAsync();
+            } else if (curErrPlatUrl.includes(constants.platform.CNBLOGS)) {
+              platform = await models.Platform.findOne({ name: constants.platform.CNBLOGS }).execAsync();
+            } else if (curErrPlatUrl.includes(constants.platform.ZHIHU)) {
+              platform = await models.Platform.findOne({ name: constants.platform.ZHIHU }).execAsync();
+            }
+          }
+          console.log(platform.name, "err in check");
+          platform.loggedIn = false
+          platform.save();
+        }
+      }
 
+    })
   }
 }
