@@ -24,7 +24,18 @@ var ResMsg = function(event) {
                 response => {
                     window.postMessage({ type: "Give_Your_Response", value: response }, "*");
                 });
-            
+
     }
+  if (event.data.type && (event.data.type == "postUrl")) {
+    chrome.runtime.sendMessage({
+        type: 'postUrl',
+        url: event.data.value.url,
+        data: event.data.value.data
+      },
+      response => {
+        window.postMessage({ type: "Give_Your_Response", value: response }, "*");
+      });
+
+  }
 }
 window.addEventListener("message", ResMsg, false);

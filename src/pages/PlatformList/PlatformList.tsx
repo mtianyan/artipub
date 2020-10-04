@@ -42,7 +42,10 @@ import JuejinSetting from '../Settings/JueJinSetting'
 import SegmentfaultSetting from "../Settings/SegmentfaultSetting";
 import ZhihuSetting from "../Settings/ZhihuSetting";
 import OschinaSetting from "../Settings/OschinaSetting";
+import CsdnSetting from "../Settings/CsdnSetting";
 import request from "umi-request";
+import JianshuSettings from "../Settings/JianshuSettings";
+import CnblogSetting from "../Settings/CnblogSettings";
 const axios = require('axios');
 
 export interface PlatformListProps extends ConnectProps {
@@ -58,6 +61,22 @@ declare global {
 
 
 const PlatformList: React.FC<PlatformListProps> = props => {
+  const [curPlatformRes, setCurPlatformRes] = useState("");
+  useEffect(()=>{
+    window.addEventListener("message", function(event) {
+      if (event.data.type === "Give_Your_ONE_COOKIE") {
+        // var div2 = document.createElement("div");
+        // div2.innerText =
+        //   JSON.stringify(event.data.value)
+        // document.body.appendChild(div2)
+      } else if (event.data.type == "Give_Your_Response"){
+        // console.log(event.data.value)
+        console.log(event.data.value)
+        setCurPlatformRes(event.data.value)
+      }
+    }, false);
+  },[])
+
   const { dispatch, platform } = props;
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [curPlatform, setCurPlatform] = useState(null);
@@ -384,6 +403,17 @@ const PlatformList: React.FC<PlatformListProps> = props => {
               className={style.settingBtn}
               onClick={() => {
                 setCurPlatform(d);
+                if(d.name === "oschina"){
+                  window.postMessage({ type: "fetchUrl", value: "https://my.oschina.net/u/4686541/blog/write" }, "*");
+                }else if(d.name === constants.platform.SEGMENTFAULT){
+                  window.postMessage({ type: "fetchUrl", value: "https://segmentfault.com/tags" }, "*")
+                }
+                else if(d.name === constants.platform.CSDN){
+                  window.postMessage({ type: "fetchUrl", value: "https://blog-console-api.csdn.net/v1/editor/getBaseInfo" }, "*")
+                }
+                else if(d.name === constants.platform.JUEJIN){
+                  window.postMessage({ type: "postUrl", value: {url:"https://apinew.juejin.im/tag_api/v1/query_category_list", data:"null"}}, "*")
+                }
                 setDrawerVisible(true)
               }}
             />
@@ -517,257 +547,81 @@ const PlatformList: React.FC<PlatformListProps> = props => {
     前端开发: ['html', 'css'],
   };
 
-  const [cities, setCities] = useState(cityData[provinceData[0]]);
-  const [secondCity, setSecondCity] = useState(cityData[provinceData[0]][0]);
-  const handleProvinceChange = value => {
-    setCities(cityData[value])
-    setSecondCity(cityData[value][0])
-  };
-  const onSecondCityChange = value => {
-    setSecondCity(value)
-  };
+
   const getForm = () => {
     if (curPlatform && curPlatform.name === 'segmentfault') {
-      return SegmentfaultSetting
+      if(curPlatformRes !== ""){
+        console.log(curPlatformRes)
+        var re = /<ul class="tag-list__itembody taglist--inline multi">.*?<\/ul>/gs;
+        var r = curPlatformRes.match(/<h3 class="h5 tag-list__itemheader">.*</g)
+        var fCate = r.map(one=>one.split(">")[1].replace("<",""))
+        console.log(fCate)
+
+        var sm = curPlatformRes.match(re)
+
+        var smList = []
+        for(let i=0;i<sm.length; i++){
+          let bigCate = sm[i].match(/data-original-title="(\w+)"/gs)
+          bigCate = bigCate.map(one=>one.split("=")[1].replace(/\"/g,""))
+          smList.push(bigCate)
+        }
+        var ret = {}
+
+        for(let i=0;i<fCate.length;i++){
+          ret[fCate[i]] = smList[i]
+        }
+
+        console.log(ret)
+        return <SegmentfaultSetting bigCate={fCate} sonCate={ret}/>
+      }
+
     }
     if (curPlatform && curPlatform.name === 'zhihu') {
       return ZhihuSetting
     }
     if (curPlatform && curPlatform.name == 'oschina') {
-      alert(curPlatform.cookieStr)
-      const headerValue = {
-        'sec-ch-ua': '"\\Not;A"Brand";v="99", "Google Chrome";v="85", "Chromium";v="85"',
-        'DNT': '1',
-        'sec-ch-ua-mobile': '?0',
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36',
-        'Accept': '*/*',
-        'Sec-Fetch-Site': 'none',
-        'Sec-Fetch-Mode': 'cors',
-        'Sec-Fetch-Dest': 'empty',
-        'Accept-Language': 'en-US,en;q=0.9,zh-US;q=0.8,zh;q=0.7,zh-CN;q=0.6,pt-BR;q=0.5,pt;q=0.4',
-        'Cookie': curPlatform.cookieStr
+      if(curPlatformRes !== ""){
+        var re = /<div class="item" data-value="\d+">(\S*)</g;
+        var r = curPlatformRes.match(re);
+        const publishZone = r.map(one=>one.split(">")[1].replace("<",""))
+
+        var re_category = /<option value="\d+">(\S*)</g;
+
+        var r = curPlatformRes.match(re_category);
+        const category= r.map(one=>one.split(">")[1].replace("<",""))
+        console.log(publishZone)
+        console.log(category)
+        return <OschinaSetting category={category} publishZone={publishZone}/>
       }
-      let url = `https://my.oschina.net/u/${curPlatform.userCode}/blog/write`
-      alert("123")
-      axios.get(url, {
-        headers: headerValue,
-        withCredentials: true,
-        changeOrigin: true,
-        Referer: ''
-      })
-      return OschinaSetting
+
     }
-    if (curPlatform && curPlatform.name == 'jianshu') {
-      return <Form>
-        <Form.Item
-          label="文集"
-          name="footer"
-          rules={[{ required: true, message: '请选择一个文集' }]}
-        >
-          <Select
-            defaultValue={provinceData[0]}
-            style={{ minWidth: 120 }}
-            onChange={handleProvinceChange}
-          >
-            {provinceData.map(province => (
-              <Option key={province}>{province}</Option>
-            ))}
-          </Select>
-        </Form.Item>
-      </Form>
+    if (curPlatform && curPlatform.name == constants.platform.JIANSHU) {
+      return <JianshuSettings/>
     }
     if (curPlatform && curPlatform.name == 'cnblogs') {
-      const remind = <span>提示： 请先在 <a href="https://i.cnblogs.com/Preferences.aspx#Editor">博客园配置</a> 页，设置编辑器为 "Markdown"</span>
-      return <Form>
-        <Alert message={remind} type="warning" />
-        <Form.Item
-          label="个人分类"
-          name="footer"
-          rules={[{ required: true, message: '请选择一个分类' }]}
-        >
-          <Select
-            defaultValue={provinceData[0]}
-            style={{ minWidth: 120 }}
-            onChange={handleProvinceChange}
-          >
-            {provinceData.map(province => (
-              <Option key={province}>{province}</Option>
-            ))}
-          </Select>
-        </Form.Item>
-        <Form.Item
-          label="发布选项"
-          name="footer"
-          rules={[{ required: true, message: '请选择一个分类' }]}
-        >
-          <Checkbox.Group style={{ width: '100%' }} onChange={() => {}}>
-            <Row>
-              <Col span={6}>
-                <Checkbox value="A">发布至首页候选区</Checkbox>
-              </Col>
-              <Col span={6}>
-                <Checkbox value="B">发布至博客园首页</Checkbox>
-              </Col>
-            </Row>
-          </Checkbox.Group>
-        </Form.Item>
-        <Form.Item
-          label="高级选项"
-          name="footer"
-          rules={[{ required: true, message: '请选择一个分类' }]}
-        >
-          <Checkbox.Group style={{ width: '100%' }} onChange={() => {}}>
-            <Row>
-              <Col span={3}>
-                <Checkbox value="A">发布</Checkbox>
-              </Col>
-              <Col span={6}>
-                <Checkbox value="B">显示在我的博客首页</Checkbox>
-              </Col>
-              <Col span={4}>
-                <Checkbox value="B">允许评论</Checkbox>
-              </Col>
-              <Col span={5}>
-                <Checkbox value="B">显示在RSS中</Checkbox>
-              </Col>
-              <Col span={5}>
-                <Checkbox value="B">只允许注册用户</Checkbox>
-              </Col>
-            </Row>
-          </Checkbox.Group>
-        </Form.Item>
-        <Form.Item
-          label="摘要"
-          name="footer"
-          rules={[{ required: true, message: '请输入话题' }]}
-        >
-          <Input.TextArea placeholder="请输入文章摘要"/>
-        </Form.Item>
-
-        <Form.Item
-          label="文章标签"
-          name="footer"
-          rules={[{ required: true, message: '' }]}
-        >
-          <Select
-            defaultValue={provinceData[0]}
-            style={{ minWidth: 120 }}
-            onChange={handleProvinceChange}
-          >
-            {provinceData.map(province => (
-              <Option key={province}>{province}</Option>
-            ))}
-          </Select>
-        </Form.Item>
-      </Form>
+            return <CnblogSetting/>
     }
     if (curPlatform && curPlatform.name == 'csdn') {
-     return <Form>
-        <Form.Item
-          required
-          label="文章类型:"
-          name="articleType"
-          rules={[{ required: true, message: '请输入文章类型' }]}
-        >
-          <Radio.Group>
-            <Radio value="a">原创</Radio>
-            <Radio value="b">转载</Radio>
-            <Radio value="c">翻译</Radio>
-          </Radio.Group>
-        </Form.Item>
-        <Form.Item
-          required
-          label="原文地址:"
-          name="footer"
-          rules={[{ required: true, message: '请输入原文地址:' }]}
-        >
-          <Input placeholder="请输入原文地址"/>
-        </Form.Item>
-       <Form.Item
-         required
-         label="发布形式:"
-         name="articleType"
-         rules={[{ required: true, message: '请选择发布形式' }]}
-       >
-         <Radio.Group>
-           <Radio value="a">公开</Radio>
-           <Radio value="b">私密</Radio>
-           <Radio value="c">粉丝可见</Radio>
-           <Radio value="c">Vip可见</Radio>
-         </Radio.Group>
-       </Form.Item>
-        <Form.Item
-          required
-          label="个人分类:"
-          name="footer"
-          rules={[{ required: true, message: '请输入个人分类:' }]}
-        >
-          <Row>
-            <Col span={12}>
-              <Select
-                defaultValue={provinceData[0]}
-                style={{ minWidth: 120 }}
-                onChange={handleProvinceChange}
-              >
-                {provinceData.map(province => (
-                  <Option key={province}>{province}</Option>
-                ))}
-              </Select>
-            </Col>
-            <Col span={12}><Select
-              style={{ paddingLeft: 10, minWidth: 120 }}
-              value={secondCity}
-              onChange={onSecondCityChange}
-            >
-              {cities.map(city => (
-                <Option key={city}>{city}</Option>
-              ))}
-            </Select></Col>
-          </Row>
+      if(curPlatformRes !==""){
+        const category = JSON.parse(curPlatformRes)["data"]["categorys"]
+        console.log(category)
+        return <CsdnSetting category={category}/>
+      }
 
-
-        </Form.Item>
-        <Form.Item
-          required
-          label="文章标签"
-          name="footer"
-          rules={[{ required: true, message: '' }]}
-        >
-          <Select
-            defaultValue={provinceData[0]}
-            style={{ minWidth: 120 }}
-            onChange={handleProvinceChange}
-          >
-            {provinceData.map(province => (
-              <Option key={province}>{province}</Option>
-            ))}
-          </Select>
-        </Form.Item>
-      </Form>
     }
-    if (curPlatform && curPlatform.name == 'juejin') {
+    if (curPlatform && curPlatform.name === constants.platform.JUEJIN) {
+      if(curPlatformRes !=="") {
+        const category = JSON.parse(curPlatformRes)["data"]
+        let categoryList = []
+        for(let i=0; i<category.length; i++){
+          categoryList.push(category[i]["category"]["category_name"])
+        }
+        return <JuejinSetting category={categoryList}/>
+      }
 
-      return JuejinSetting
     }
     if (curPlatform && curPlatform.name == constants.platform.TOUTIAO) {
-      return <Form>
-        <Form.Item
-          label="广告投放"
-          name="footer"
-          rules={[{ required: true, message: '请选择是否投放广告' }]}
-        >
-          <Checkbox.Group style={{ width: '100%' }} onChange={() => {}}>
-            <Row>
-              <Col span={4}>
-                <Checkbox value="A">投放头条广告</Checkbox>
-              </Col>
-              <Col span={4}>
-                <Checkbox value="B">不投放广告</Checkbox>
-              </Col>
-            </Row>
-          </Checkbox.Group>
-        </Form.Item>
-      </Form>
+      return
     }
   }
   const getAlertMsg = () => {
@@ -797,7 +651,7 @@ const PlatformList: React.FC<PlatformListProps> = props => {
   return (
     <PageHeaderWrapper {...pageProps}>
       <Drawer
-        title={`${curPlatform ? curPlatform.name : '平台'} 配置项`}
+        title={`${curPlatform ? curPlatform.label : '平台'} 配置项`}
         width={720}
         onClose={onClose}
         visible={drawerVisible}

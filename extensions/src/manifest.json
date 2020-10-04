@@ -23,7 +23,9 @@
     "cookies",
     "http://*/*",
     "https://*/*",
-    "storage"
+    "storage",
+    "webRequest",
+    "webRequestBlocking"
   ],
   "web_accessible_resources":[
     "icon.png"

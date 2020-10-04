@@ -29,9 +29,39 @@ chrome.runtime.onMessage.addListener(
                         .then(text => sendResponse(text))
                         .catch(error => sendResponse(error))
                     return true; // Will respond asynchronously.
-            default:
+          case 'postUrl':
+            let init = {
+              method: 'post',
+
+              credentials: 'include',
+              headers: {'content-type': 'application/json'
+              }
+            }
+            if(message.data !== "null"){
+              init["body"] = JSON.stringify(message.data)
+            }
+            fetch(message.url, init)
+              .then(response => response.text())
+              .then(text => sendResponse(text))
+              .catch(error => sendResponse(error))
+            return true; // Will respond asynchronously.
+          default:
                 console.error('Unrecognised message: ', message);
                 sendResponse("Unrecognised message:");
         }
     }
+);
+// 掘金请求头设置
+chrome.webRequest.onBeforeSendHeaders.addListener(
+  function (details) {
+    details.requestHeaders.push({
+      name: 'Referer', value: 'https://juejin.im/editor/drafts/6857487746525888520'
+    })
+    details.requestHeaders.push({
+      name: 'Origin', value: 'https://juejin.im'
+    })
+    return { requestHeaders: details.requestHeaders }
+  },
+  { urls: ["https://apinew.juejin.im/*"] },
+  ["blocking", "requestHeaders", "extraHeaders"]
 );
