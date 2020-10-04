@@ -213,6 +213,11 @@ const PlatformList: React.FC<PlatformListProps> = props => {
     TDAPP.onEvent('平台管理-取消账户设置')
   };
 
+  const onAuth = d =>{
+    // TODO auth with Chrome Extension
+    console.log(d)
+  }
+
   const onAccountSave = async () => {
     await dispatch({
       type: 'platform/savePlatform',
@@ -353,16 +358,15 @@ const PlatformList: React.FC<PlatformListProps> = props => {
           {/*    onClick={onFetch(d)}*/}
           {/*  />*/}
           {/*</Tooltip>*/}
-          {/* <Tooltip title="设置登陆用户名密码"> */}
-          {/*  <Button */}
-          {/*    disabled={!d.enableLogin} */}
-          {/*    type="default" */}
-          {/*    shape="circle" */}
-          {/*    icon="key" */}
-          {/*    className={style.loginBtn} */}
-          {/*    onClick={onAccount(d)} */}
-          {/*  /> */}
-          {/* </Tooltip> */}
+           <Tooltip title="认证">
+            <Button
+              type="default"
+              shape="circle"
+              icon="login"
+              className={style.settingBtn}
+              onClick={()=>onAuth(d)}
+            />
+           </Tooltip>
           { window.navigator.userAgent.indexOf('Electron') === -1 ? <></>:<Tooltip title="打开浏览器登录">
             <Button
               type="default"
@@ -742,6 +746,7 @@ const PlatformList: React.FC<PlatformListProps> = props => {
       </Form>
     }
     if (curPlatform && curPlatform.name == 'juejin') {
+
       return JuejinSetting
     }
     if (curPlatform && curPlatform.name == constants.platform.TOUTIAO) {

@@ -55,6 +55,8 @@ module.exports = {
       'src/manifest.json',
       'src/icon.png',
       'src/antd.min.css',
+      'src/background.js',
+      'src/content_script.js'
     ])
   ]
 }

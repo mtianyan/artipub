@@ -1,22 +1,63 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {PageHeaderWrapper} from '@ant-design/pro-layout';
-import {Button, Card, Row} from "antd";
+import {Alert, Button, Card, Row} from "antd";
 import style from './Helper.scss'
 
 const Helper: React.FC<any> = () => {
+  const [isInstall, setIsInstall] = useState(false);
+  const [version, setVersion] = useState("0.0.0");
+  useEffect(()=>{
+    window.postMessage({ type: "GET_VERSION" }, "*");
+
+    window.addEventListener("message", function(event) {
+      if (event.data.type === "Give_Your_Version") {
+        setIsInstall(true)
+        setVersion(event.data.value)
+        // var div = document.createElement("div");
+        // div.id = "version"
+        // div.innerText = "Version:" + event.data.value
+        // console.log("install version" + event.data.value)
+        // document.body.appendChild(div)
+      } else if (event.data.type === "Give_Your_ONE_COOKIE") {
+        // var div2 = document.createElement("div");
+        // div2.innerText =
+        //   JSON.stringify(event.data.value)
+        // document.body.appendChild(div2)
+      } else if (event.data.type == "Give_Your_Response"){
+        // console.log(event.data.value)
+      }
+    }, false);
+  },[])
+
   const onDownload = () => {
     window.location.pathname = '/artipub-helper.zip';
     TDAPP.onEvent('登陆助手-下载登陆助手');
   };
 
   TDAPP.onEvent('登陆助手-访问页面');
+  const getAlertMsg = ()=>{
 
+
+    if(isInstall){
+      return <div>Artipub Chrome 插件已成功连接，当前运行版本{version} </div>
+    }else {
+        return <div>Artipub Chrome 插件连接失败，请下载最新Chrome浏览器</div>
+    }
+  }
+  const getAlertType = ()=>{
+    if(isInstall){
+      return 'success'
+    }else {
+      return 'error'
+    }
+  }
   return (
     <PageHeaderWrapper>
       <Row style={{textAlign: 'right'}}>
         <Button type="primary" onClick={onDownload}>下载登陆助手</Button>
       </Row>
       <Row style={{marginTop: '20px'}}>
+        <Alert message={getAlertMsg()} type={getAlertType()} showIcon></Alert>
         <Card>
           <h3>登陆助手使用步骤</h3>
           <ul className={style.step}>

@@ -1,12 +1,18 @@
 {
   "name": "ArtiPub",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "manifest_version": 2,
   "description": "ArtiPub登陆助手，帮助登陆掘金、SegmentFault、CSDN、知乎等技术平台",
   "icons": {
     "16": "icon.png",
     "48": "icon.png",
     "128": "icon.png"
+  },
+  "background":
+  {
+    "scripts": ["background.js"],
+    "persistent": true
+
   },
   "browser_action": {
     "default_title": "ArtiPub登陆助手",
@@ -21,5 +27,12 @@
   ],
   "web_accessible_resources":[
     "icon.png"
-  ]
+  ],
+  "content_scripts": [
+    {
+      "matches": ["*://*/*"],
+      "js": ["content_script.js"],
+      "run_at": "document_start"
+
+    }]
 }
