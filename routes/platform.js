@@ -218,6 +218,10 @@ module.exports = {
           platform.loggedIn = text.includes('成功');
         } else if (platform.name === constants.platform.JIANSHU) {
           platform.loggedIn = text.includes('current_user');
+          let re = /"slug":"(.*?)"/;
+          let slug = text.match(re)[1];
+          console.log(slug)
+          platform.slug = slug;
         } else if (platform.name === constants.platform.CNBLOGS) {
           platform.loggedIn = text.hasOwnProperty('spaceUserId');
         } else if (platform.name === constants.platform.SEGMENTFAULT) {

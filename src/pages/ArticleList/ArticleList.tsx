@@ -1,15 +1,14 @@
-import React, {useEffect, useState} from 'react';
-import {PageHeaderWrapper} from '@ant-design/pro-layout';
-import {Badge, Button, Card, Form, Input, message, Modal, Popconfirm, Select, Table, Tag, Tooltip} from 'antd';
-import {Article, ArticleModelState} from '@/models/article';
-import {ConnectProps, ConnectState, Dispatch} from '@/models/connect';
-import {connect} from 'dva';
-import {ColumnProps, SelectionSelectFn, TableRowSelection} from 'antd/lib/table';
+import React, { useEffect, useState } from 'react';
+import { PageHeaderWrapper } from '@ant-design/pro-layout';
+import { Badge, Button, Card, Form, Input, message, Modal, Popconfirm, Select, Table, Tag, Tooltip } from 'antd';
+import { Article, ArticleModelState } from '@/models/article';
+import { ConnectProps, ConnectState, Dispatch } from '@/models/connect';
+import { connect } from 'dva';
+import { ColumnProps, SelectionSelectFn, TableRowSelection } from 'antd/lib/table';
 import router from 'umi/router';
-import style from './ArticleList.scss';
-import {Platform, PlatformModelState} from '@/models/platform';
+import { Platform, PlatformModelState } from '@/models/platform';
 import moment from 'moment';
-import {Task, TaskModelState} from '@/models/task';
+import { Task, TaskModelState } from '@/models/task';
 import constants from '@/constants';
 
 // logo images
@@ -23,10 +22,11 @@ import imgToutiao from '@/assets/img/toutiao-logo.png';
 import imgCnblogs from '@/assets/img/cnblogs-logo.gif';
 import imgV2ex from '@/assets/img/v2ex-logo.jpg';
 import imgWechat from '@/assets/img/wechat-logo.jpg';
-import juejin from "@/data/juejin";
-import v2ex from "@/data/v2ex";
-import JuejinSetting from "../Settings/JueJinSetting";
-import SegmentfaultSetting from "../Settings/SegmentfaultSetting";
+import juejin from '@/data/juejin';
+import v2ex from '@/data/v2ex';
+import style from './ArticleList.scss';
+import JuejinSetting from '../Settings/JueJinSetting';
+import SegmentfaultSetting from '../Settings/SegmentfaultSetting';
 
 declare global {
   interface Window {
@@ -43,18 +43,15 @@ export interface ArticleListProps extends ConnectProps {
 }
 
 const ArticleList: React.FC<ArticleListProps> = props => {
-  const {dispatch, article, platform, task} = props;
+  const { dispatch, article, platform, task } = props;
 
-  const onArticleEdit: Function = (d: Article) => {
-    return () => {
+  const onArticleEdit: Function = (d: Article) => () => {
       router.push(`/articles/edit/${d._id}`);
 
       TDAPP.onEvent('文章管理-点击编辑');
     };
-  };
 
-  const onArticleDelete: Function = (d: Article) => {
-    return async () => {
+  const onArticleDelete: Function = (d: Article) => async () => {
       await dispatch({
         type: 'article/deleteArticle',
         payload: d,
@@ -64,7 +61,6 @@ const ArticleList: React.FC<ArticleListProps> = props => {
       });
       TDAPP.onEvent('文章管理-确认删除');
     };
-  };
 
   const onArticleCreate = () => {
     if (dispatch) {
@@ -77,8 +73,7 @@ const ArticleList: React.FC<ArticleListProps> = props => {
     TDAPP.onEvent('文章管理-创建文章');
   };
 
-  const onArticleTasksModalOpen: Function = (a: Article) => {
-    return async () => {
+  const onArticleTasksModalOpen: Function = (a: Article) => async () => {
       await dispatch({
         type: 'article/fetchArticle',
         payload: {
@@ -113,7 +108,6 @@ const ArticleList: React.FC<ArticleListProps> = props => {
 
       TDAPP.onEvent('文章管理-打开发布');
     };
-  };
 
   const onArticleTasksModalCancel = async () => {
     await dispatch({
@@ -131,8 +125,7 @@ const ArticleList: React.FC<ArticleListProps> = props => {
     TDAPP.onEvent('文章管理-关闭发布');
   };
 
-  const onArticleTasksPublish: Function = () => {
-    return async () => {
+  const onArticleTasksPublish: Function = () => async () => {
       if (article.currentArticle) {
         await dispatch({
           type: 'article/publishArticle',
@@ -145,23 +138,19 @@ const ArticleList: React.FC<ArticleListProps> = props => {
 
       TDAPP.onEvent('文章管理-确认发布');
     };
-  };
 
-  const onTaskViewArticle: Function = (t: Task) => {
-    return () => {
-      if (window.navigator.userAgent.indexOf("Electron") === -1) {
+  const onTaskViewArticle: Function = (t: Task) => () => {
+      if (window.navigator.userAgent.indexOf('Electron') === -1) {
         window.open(t.url);
 
         TDAPP.onEvent('文章管理-查看文章原文');
       } else {
-        const ipcRenderer = window.require("electron").ipcRenderer;
-        ipcRenderer.send('preview', {'url': t.url});
+        const { ipcRenderer } = window.require('electron');
+        ipcRenderer.send('preview', { url: t.url });
       }
     };
-  };
 
-  const onTaskModalOpen: Function = (p: Platform) => {
-    return () => {
+  const onTaskModalOpen: Function = (p: Platform) => () => {
       if (article.currentArticle) {
         const t: Task = task.tasks.filter((t: Task) => t.platformId === p._id)[0];
         dispatch({
@@ -176,7 +165,6 @@ const ArticleList: React.FC<ArticleListProps> = props => {
         TDAPP.onEvent('文章管理-打开平台设置');
       }
     };
-  };
 
   const onTaskModalCancel = () => {
     dispatch({
@@ -205,24 +193,22 @@ const ArticleList: React.FC<ArticleListProps> = props => {
   const getDefaultCategory = (p: Platform) => {
     if (p.name === constants.platform.JUEJIN) {
       return '前端';
-    } else if (p.name === constants.platform.CSDN) {
+    } if (p.name === constants.platform.CSDN) {
       return '原创';
-    } else {
-      return '';
     }
+      return '';
   };
 
   const getDefaultTag = (p: Platform) => {
     if (p.name === constants.platform.JUEJIN) {
       return '前端';
-    } else {
-      return '前端';
     }
+      return '前端';
   };
 
   const saveTasks = async (selectedPlatforms: Object[], _article: Article) => {
     if (!platform.platforms) return;
-    let tasks: Task[] = [];
+    const tasks: Task[] = [];
     platform.platforms.forEach((p: Platform) => {
       let t: Task = task.tasks.filter((_t: Task) => _t.platformId === p._id)[0];
       if (t) {
@@ -252,7 +238,7 @@ const ArticleList: React.FC<ArticleListProps> = props => {
     });
     await dispatch({
       type: 'task/fetchTaskList',
-      payload: {id: _article._id},
+      payload: { id: _article._id },
     });
   };
 
@@ -279,8 +265,7 @@ const ArticleList: React.FC<ArticleListProps> = props => {
     }
   };
 
-  const onTaskChange: Function = (type: string, key: string) => {
-    return (ev: any) => {
+  const onTaskChange: Function = (type: string, key: string) => (ev: any) => {
       let value;
       if (type === constants.inputType.SELECT) {
         value = ev;
@@ -295,19 +280,18 @@ const ArticleList: React.FC<ArticleListProps> = props => {
         });
       }
     };
-  };
 
   const getBadgeCount = (p: Platform) => {
     const t = task.tasks.filter((d: Task) => d.platformId === p._id)[0];
     if (!t || !t.checked) return 0;
     if (p.name === constants.platform.JUEJIN) {
-      return t.tag === "" ? 1 : 0;
-    } else if (p.name === constants.platform.SEGMENTFAULT) {
-      return t.tag === "" ? 1 : 0;
-    } else if (p.name === constants.platform.OSCHINA) {
-      return t.category === "" ? 1 : 0;
-    } else if (p.name === constants.platform.V2EX) {
-      return t.category === "" ? 1 : 0;
+      return t.tag === '' ? 1 : 0;
+    } if (p.name === constants.platform.SEGMENTFAULT) {
+      return t.tag === '' ? 1 : 0;
+    } if (p.name === constants.platform.OSCHINA) {
+      return t.category === '' ? 1 : 0;
+    } if (p.name === constants.platform.V2EX) {
+      return t.category === '' ? 1 : 0;
     }
     return 0
   };
@@ -318,8 +302,7 @@ const ArticleList: React.FC<ArticleListProps> = props => {
    * @param t
    * @param authType
    */
-  const onSelectAuthType: Function = (t: Task, authType: string) => {
-    return async () => {
+  const onSelectAuthType: Function = (t: Task, authType: string) => async () => {
       const tasks = task.tasks.map((_t: Task) => {
         if (t === _t) {
           _t.authType = authType;
@@ -337,7 +320,6 @@ const ArticleList: React.FC<ArticleListProps> = props => {
 
       TDAPP.onEvent('文章管理-选择登陆类型');
     };
-  };
 
   const getStatsComponent = (d: any) => {
     d.readNum = d.readNum || 0;
@@ -345,13 +327,13 @@ const ArticleList: React.FC<ArticleListProps> = props => {
     d.commentNum = d.commentNum || 0;
     return (
       <div>
-        <Tooltip title={'阅读数: ' + d.readNum.toString()}>
+        <Tooltip title={`阅读数: ${d.readNum.toString()}`}>
           <Tag color="green">{d.readNum}</Tag>
         </Tooltip>
-        <Tooltip title={'点赞数: ' + d.likeNum.toString()}>
+        <Tooltip title={`点赞数: ${d.likeNum.toString()}`}>
           <Tag color="orange">{d.likeNum}</Tag>
         </Tooltip>
-        <Tooltip title={'评论数: ' + d.commentNum.toString()}>
+        <Tooltip title={`评论数: ${d.commentNum.toString()}`}>
           <Tag color="blue">{d.commentNum}</Tag>
         </Tooltip>
       </div>
@@ -390,17 +372,14 @@ const ArticleList: React.FC<ArticleListProps> = props => {
       dataIndex: '_id',
       key: '_id',
       width: '200px',
-      render: (text: string, d: Article) => {
-        return getStatsComponent(d);
-      },
+      render: (text: string, d: Article) => getStatsComponent(d),
     },
     {
       title: '操作',
       dataIndex: 'action',
       key: 'action',
       width: '200px',
-      render: (text, d) => {
-        return (
+      render: (text, d) => (
           <div>
             <Tooltip title="发布">
               <Button
@@ -426,8 +405,7 @@ const ArticleList: React.FC<ArticleListProps> = props => {
               </Tooltip>
             </Popconfirm>
           </div>
-        );
-      },
+        ),
     },
   ];
 
@@ -440,27 +418,27 @@ const ArticleList: React.FC<ArticleListProps> = props => {
       render: (text, d) => {
         if (d.name === constants.platform.JUEJIN) {
           return <img className={style.siteLogo} alt={d.label} src={imgJuejin} />;
-        } else if (d.name === constants.platform.SEGMENTFAULT) {
+        } if (d.name === constants.platform.SEGMENTFAULT) {
           return <img className={style.siteLogo} alt={d.label} src={imgSegmentfault} />;
-        } else if (d.name === constants.platform.JIANSHU) {
+        } if (d.name === constants.platform.JIANSHU) {
           return <img className={style.siteLogo} alt={d.label} src={imgJianshu} />;
-        } else if (d.name === constants.platform.CSDN) {
+        } if (d.name === constants.platform.CSDN) {
           return <img className={style.siteLogo} alt={d.label} src={imgCsdn} />;
-        } else if (d.name === constants.platform.ZHIHU) {
+        } if (d.name === constants.platform.ZHIHU) {
           return <img className={style.siteLogo} alt={d.label} src={imgZhihu} />;
-        } else if (d.name === constants.platform.OSCHINA) {
+        } if (d.name === constants.platform.OSCHINA) {
           return <img className={style.siteLogo} alt={d.label} src={imgOschina} />;
-        } else if (d.name === constants.platform.TOUTIAO) {
+        } if (d.name === constants.platform.TOUTIAO) {
           return <img className={style.siteLogo} alt={d.label} src={imgToutiao} />;
-        } else if (d.name === constants.platform.CNBLOGS) {
+        } if (d.name === constants.platform.CNBLOGS) {
           return <img className={style.siteLogo} alt={d.label} src={imgCnblogs} />;
-        } else if (d.name === constants.platform.V2EX) {
+        } if (d.name === constants.platform.V2EX) {
           return <img className={style.siteLogo} alt={d.label} src={imgV2ex} />;
-        } else if (d.name === constants.platform.WECHAT) {
+        } if (d.name === constants.platform.WECHAT) {
           return <img className={style.siteLogo} alt={d.label} src={imgWechat} />;
-        } else {
-          return <div />;
         }
+          return <div />;
+
       },
     },
     {
@@ -610,7 +588,7 @@ const ArticleList: React.FC<ArticleListProps> = props => {
     )[0]
     : undefined;
   const currentTask = task.tasks.filter((t: Task) => t.platformId === (currentPlatform ? currentPlatform._id : ''))[0];
-  let platformCommonContent = (
+  const platformCommonContent = (
     <Form>
       <Form.Item label="标题">
         <Input
@@ -623,26 +601,23 @@ const ArticleList: React.FC<ArticleListProps> = props => {
   );
   if (currentPlatform && currentPlatform.name === constants.platform.JUEJIN) {
     platformContent = JuejinSetting
-  }
-  else if (currentPlatform && currentPlatform.name === constants.platform.SEGMENTFAULT) {
+  } else if (currentPlatform && currentPlatform.name === constants.platform.SEGMENTFAULT) {
     platformContent = SegmentfaultSetting
-  }
-  else if (currentPlatform && currentPlatform.name === constants.platform.JIANSHU) {}
-  else if (currentPlatform && currentPlatform.name === constants.platform.CSDN) {
+  } else if (currentPlatform && currentPlatform.name === constants.platform.JIANSHU) {} else if (currentPlatform && currentPlatform.name === constants.platform.CSDN) {
     const categories = [
-      {value: '1', label: '原创'},
-      {value: '2', label: '转载'},
-      {value: '4', label: '翻译'},
+      { value: '1', label: '原创' },
+      { value: '2', label: '转载' },
+      { value: '4', label: '翻译' },
     ];
     const pubTypes = [
-      {value: 'public', label: '公开'},
-      {value: 'private', label: '私密'},
-      {value: 'needfans', label: '粉丝可见'},
-      {value: 'needvip', label: 'VIP可见'},
+      { value: 'public', label: '公开' },
+      { value: 'private', label: '私密' },
+      { value: 'needfans', label: '粉丝可见' },
+      { value: 'needvip', label: 'VIP可见' },
     ];
     platformContent = (
-      <Form labelCol={{sm: {span: 4}}} wrapperCol={{sm: {span: 20}}}>
-        <Form.Item label="文章类型" required={true}>
+      <Form labelCol={{ sm: { span: 4 } }} wrapperCol={{ sm: { span: 20 } }}>
+        <Form.Item label="文章类型" required>
           <Select
             placeholder="选择文章类型"
             value={task.currentTask ? task.currentTask.category : undefined}
@@ -653,7 +628,7 @@ const ArticleList: React.FC<ArticleListProps> = props => {
             ))}
           </Select>
         </Form.Item>
-        <Form.Item label="发布形式" required={true}>
+        <Form.Item label="发布形式" required>
           <Select
             placeholder="选择发布形式"
             value={task.currentTask ? task.currentTask.pubType : undefined}
@@ -666,10 +641,9 @@ const ArticleList: React.FC<ArticleListProps> = props => {
         </Form.Item>
       </Form>
     );
-  }
-  else if (currentPlatform && currentPlatform.name === constants.platform.ZHIHU) {
+  } else if (currentPlatform && currentPlatform.name === constants.platform.ZHIHU) {
     platformContent = (
-      <Form labelCol={{sm: {span: 4}}} wrapperCol={{sm: {span: 20}}}>
+      <Form labelCol={{ sm: { span: 4 } }} wrapperCol={{ sm: { span: 20 } }}>
         <Form.Item label="话题">
           <Input
             placeholder="输入话题（用逗号分割）"
@@ -679,8 +653,7 @@ const ArticleList: React.FC<ArticleListProps> = props => {
         </Form.Item>
       </Form>
     );
-  }
-  else if (currentPlatform && currentPlatform.name === constants.platform.OSCHINA) {
+  } else if (currentPlatform && currentPlatform.name === constants.platform.OSCHINA) {
     const categories = [
       '移动开发',
       '前端开发',
@@ -701,8 +674,8 @@ const ArticleList: React.FC<ArticleListProps> = props => {
       '物联网',
     ];
     platformContent = (
-      <Form labelCol={{sm: {span: 4}}} wrapperCol={{sm: {span: 20}}}>
-        <Form.Item label="系统分类" required={true}>
+      <Form labelCol={{ sm: { span: 4 } }} wrapperCol={{ sm: { span: 20 } }}>
+        <Form.Item label="系统分类" required>
           <Select
             placeholder="点击选择系统分类"
             value={task.currentTask ? task.currentTask.category : undefined}
@@ -715,12 +688,11 @@ const ArticleList: React.FC<ArticleListProps> = props => {
         </Form.Item>
       </Form>
     );
-  }
-  else if (currentPlatform && currentPlatform.name === constants.platform.V2EX) {
-    const categories = v2ex.categories;
+  } else if (currentPlatform && currentPlatform.name === constants.platform.V2EX) {
+    const { categories } = v2ex;
     platformContent = (
-      <Form labelCol={{sm: {span: 4}}} wrapperCol={{sm: {span: 20}}}>
-        <Form.Item label="节点" required={true}>
+      <Form labelCol={{ sm: { span: 4 } }} wrapperCol={{ sm: { span: 20 } }}>
+        <Form.Item label="节点" required>
           <Select
             placeholder="点击选择节点"
             value={task.currentTask ? task.currentTask.category : undefined}
@@ -739,7 +711,7 @@ const ArticleList: React.FC<ArticleListProps> = props => {
     );
   }
 
-  const pageProps = window.navigator.userAgent.indexOf("Electron") !== -1 ? {
+  const pageProps = window.navigator.userAgent.indexOf('Electron') !== -1 ? {
     pageHeaderRender: false,
     title: false,
     // style: {display: 'none'}
@@ -757,19 +729,17 @@ const ArticleList: React.FC<ArticleListProps> = props => {
           // 定义右下角 按钮的地方 可根据需要使用 一个或者 2个按钮
           <Button key="back" onClick={onArticleTasksModalCancel}>取消</Button>,
           <Button key="submit" type="primary" onClick={onArticleTasksPublish()}>安全发布</Button>,
-          <Button key="submit" type="primary" onClick={onArticleTasksPublish()}>极速发布</Button>
+          <Button key="submit" type="primary" onClick={onArticleTasksPublish()}>极速发布</Button>,
           ]}
 
       >
         <Table
           dataSource={
             platform.platforms
-              ? platform.platforms.map((d: Platform) => {
-                return {
+              ? platform.platforms.map((d: Platform) => ({
                   key: d._id,
                   ...d,
-                };
-              })
+                }))
               : []
           }
           rowSelection={taskRowSelection}
@@ -778,7 +748,7 @@ const ArticleList: React.FC<ArticleListProps> = props => {
         />
       </Modal>
       <Modal
-        title={currentPlatform ? '配置-' + currentPlatform.label : '配置'}
+        title={currentPlatform ? `配置-${currentPlatform.label}` : '配置'}
         visible={article.platformModalVisible}
         onOk={onTaskModalConfirm}
         onCancel={onTaskModalCancel}
@@ -786,19 +756,19 @@ const ArticleList: React.FC<ArticleListProps> = props => {
         {platformCommonContent}
         {platformContent}
       </Modal>
-      <div className={style.actions} style={{paddingTop: '10px'}}>
+      <div className={style.actions} style={{ paddingTop: '10px' }}>
         <Button className={style.addBtn} type="primary" onClick={onArticleCreate}>
           创建文章
         </Button>
       </div>
-      {window.navigator.userAgent.indexOf("Electron") === -1 ?
+      {window.navigator.userAgent.indexOf('Electron') === -1 ?
         <Card><Table dataSource={article.articles} columns={articleColumns} /></Card> :
         <Table dataSource={article.articles} columns={articleColumns} />}
     </PageHeaderWrapper>
   );
 };
 
-export default connect(({article, platform, task}: ConnectState) => ({
+export default connect(({ article, platform, task }: ConnectState) => ({
   article,
   platform,
   task,

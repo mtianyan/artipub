@@ -1,7 +1,7 @@
-import {Alert, Form, Select} from "antd";
-import React from "react";
+import { Alert, Form, Select } from 'antd';
+import React from 'react';
 
-const CnblogSetting = (props)=>{
+const CnblogSetting = props => {
   const remind = <span>提示： 请先在 <a href="https://i.cnblogs.com/Preferences.aspx#Editor">博客园配置</a> 页，设置编辑器为 "Markdown"</span>
 
   return <Form>

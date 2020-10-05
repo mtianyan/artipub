@@ -1,7 +1,7 @@
-import {Col, Form, Input, Radio, Row, Select} from "antd";
-import React from "react";
+import { Form, Input, Radio, Row, Select } from 'antd';
+import React from 'react';
 
-const CsdnSetting = (props) =>{
+const CsdnSetting = props => {
   const CategoryChildren = [];
   console.log(props.category)
   for (let i = 0; i < props.category.length; i++) {
@@ -64,7 +64,7 @@ const CsdnSetting = (props) =>{
   name="footer"
   rules={[{ required: true, message: '' }]}
   >
-    {/*TODO 仿照csdn的标签选择器*/}
+    {/* TODO 仿照csdn的标签选择器 */}
     <Select
       style={{ minWidth: 120 }}
     >

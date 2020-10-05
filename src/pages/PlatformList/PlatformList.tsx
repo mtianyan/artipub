@@ -37,15 +37,16 @@ import imgToutiao from '@/assets/img/toutiao-logo.png';
 import imgCnblogs from '@/assets/img/cnblogs-logo.gif';
 import imgV2ex from '@/assets/img/v2ex-logo.jpg';
 import imgWechat from '@/assets/img/wechat-logo.jpg';
+import request from 'umi-request';
 import style from './PlatformList.scss';
 import JuejinSetting from '../Settings/JueJinSetting'
-import SegmentfaultSetting from "../Settings/SegmentfaultSetting";
-import ZhihuSetting from "../Settings/ZhihuSetting";
-import OschinaSetting from "../Settings/OschinaSetting";
-import CsdnSetting from "../Settings/CsdnSetting";
-import request from "umi-request";
-import JianshuSettings from "../Settings/JianshuSettings";
-import CnblogSetting from "../Settings/CnblogSettings";
+import SegmentfaultSetting from '../Settings/SegmentfaultSetting';
+import ZhihuSetting from '../Settings/ZhihuSetting';
+import OschinaSetting from '../Settings/OschinaSetting';
+import CsdnSetting from '../Settings/CsdnSetting';
+import JianshuSettings from '../Settings/JianshuSettings';
+import CnblogSetting from '../Settings/CnblogSettings';
+
 const axios = require('axios');
 
 export interface PlatformListProps extends ConnectProps {
@@ -61,21 +62,21 @@ declare global {
 
 
 const PlatformList: React.FC<PlatformListProps> = props => {
-  const [curPlatformRes, setCurPlatformRes] = useState("");
-  useEffect(()=>{
-    window.addEventListener("message", function(event) {
-      if (event.data.type === "Give_Your_ONE_COOKIE") {
+  const [curPlatformRes, setCurPlatformRes] = useState('');
+  useEffect(() => {
+    window.addEventListener('message', event => {
+      if (event.data.type === 'Give_Your_ONE_COOKIE') {
         // var div2 = document.createElement("div");
         // div2.innerText =
         //   JSON.stringify(event.data.value)
         // document.body.appendChild(div2)
-      } else if (event.data.type == "Give_Your_Response"){
+      } else if (event.data.type == 'Give_Your_Response') {
         // console.log(event.data.value)
         console.log(event.data.value)
         setCurPlatformRes(event.data.value)
       }
     }, false);
-  },[])
+  }, [])
 
   const { dispatch, platform } = props;
   const [drawerVisible, setDrawerVisible] = useState(false);
@@ -232,7 +233,7 @@ const PlatformList: React.FC<PlatformListProps> = props => {
     TDAPP.onEvent('平台管理-取消账户设置')
   };
 
-  const onAuth = d =>{
+  const onAuth = d => {
     // TODO auth with Chrome Extension
     console.log(d)
   }
@@ -367,26 +368,26 @@ const PlatformList: React.FC<PlatformListProps> = props => {
       width: '180px',
       render: (text: string, d: Platform) => (
         <div>
-          {/*<Tooltip title="导入文章">*/}
-          {/*  <Button*/}
-          {/*    disabled={!d.enableImport}*/}
-          {/*    type="primary"*/}
-          {/*    shape="circle"*/}
-          {/*    icon="import"*/}
-          {/*    className={style.fetchBtn}*/}
-          {/*    onClick={onFetch(d)}*/}
-          {/*  />*/}
-          {/*</Tooltip>*/}
+          {/* <Tooltip title="导入文章"> */}
+          {/*  <Button */}
+          {/*    disabled={!d.enableImport} */}
+          {/*    type="primary" */}
+          {/*    shape="circle" */}
+          {/*    icon="import" */}
+          {/*    className={style.fetchBtn} */}
+          {/*    onClick={onFetch(d)} */}
+          {/*  /> */}
+          {/* </Tooltip> */}
            <Tooltip title="认证">
             <Button
               type="default"
               shape="circle"
               icon="login"
               className={style.settingBtn}
-              onClick={()=>onAuth(d)}
+              onClick={() => onAuth(d)}
             />
            </Tooltip>
-          { window.navigator.userAgent.indexOf('Electron') === -1 ? <></>:<Tooltip title="打开浏览器登录">
+          { window.navigator.userAgent.indexOf('Electron') === -1 ? <></> : <Tooltip title="打开浏览器登录">
             <Button
               type="default"
               shape="circle"
@@ -403,16 +404,20 @@ const PlatformList: React.FC<PlatformListProps> = props => {
               className={style.settingBtn}
               onClick={() => {
                 setCurPlatform(d);
-                if(d.name === "oschina"){
-                  window.postMessage({ type: "fetchUrl", value: "https://my.oschina.net/u/4686541/blog/write" }, "*");
-                }else if(d.name === constants.platform.SEGMENTFAULT){
-                  window.postMessage({ type: "fetchUrl", value: "https://segmentfault.com/tags" }, "*")
-                }
-                else if(d.name === constants.platform.CSDN){
-                  window.postMessage({ type: "fetchUrl", value: "https://blog-console-api.csdn.net/v1/editor/getBaseInfo" }, "*")
-                }
-                else if(d.name === constants.platform.JUEJIN){
-                  window.postMessage({ type: "postUrl", value: {url:"https://apinew.juejin.im/tag_api/v1/query_category_list", data:"null"}}, "*")
+                if (d.name === 'oschina') {
+                  window.postMessage({ type: 'fetchUrl', value: 'https://my.oschina.net/u/4686541/blog/write' }, '*');
+                } else if (d.name === constants.platform.SEGMENTFAULT) {
+                  window.postMessage({ type: 'fetchUrl', value: 'https://segmentfault.com/tags' }, '*')
+                } else if (d.name === constants.platform.CSDN) {
+                  window.postMessage({ type: 'fetchUrl', value: 'https://blog-console-api.csdn.net/v1/editor/getBaseInfo' }, '*')
+                } else if (d.name === constants.platform.JUEJIN) {
+                  window.postMessage({ type: 'postUrl', value: { url: 'https://apinew.juejin.im/tag_api/v1/query_category_list', data: 'null' } }, '*')
+                } else if (d.name === constants.platform.JIANSHU) {
+                  // window.postMessage({ type: 'fetchUrl', value: `https://www.jianshu.com/users/${d.slug}/collections_and_notebooks?slug=${d.slug}` }, '*')
+                  window.postMessage({ type: 'fetchUrl', value: 'https://www.jianshu.com/author/notebooks' }, '*')
+                }else if(d.name === constants.platform.CNBLOGS){
+                  window.postMessage({ type: 'requestUrlList', valueList: [{value: 'https://i-beta.cnblogs.com/api/category/blog/1/edit'}, {value: 'https://i-beta.cnblogs.com/api/category/site'}]  }, '*');
+                  console.log("xxx2", curPlatformRes)
                 }
                 setDrawerVisible(true)
               }}
@@ -550,78 +555,90 @@ const PlatformList: React.FC<PlatformListProps> = props => {
 
   const getForm = () => {
     if (curPlatform && curPlatform.name === 'segmentfault') {
-      if(curPlatformRes !== ""){
-        console.log(curPlatformRes)
-        var re = /<ul class="tag-list__itembody taglist--inline multi">.*?<\/ul>/gs;
-        var r = curPlatformRes.match(/<h3 class="h5 tag-list__itemheader">.*</g)
-        var fCate = r.map(one=>one.split(">")[1].replace("<",""))
-        console.log(fCate)
+      if (curPlatformRes !== '') {
+        try {
+          console.log(curPlatformRes)
+          var re = /<ul class="tag-list__itembody taglist--inline multi">.*?<\/ul>/gs;
+          var r = curPlatformRes.match(/<h3 class="h5 tag-list__itemheader">.*</g)
+          const fCate = r.map(one => one.split('>')[1].replace('<', ''))
+          console.log(fCate)
 
-        var sm = curPlatformRes.match(re)
+          const sm = curPlatformRes.match(re)
 
-        var smList = []
-        for(let i=0;i<sm.length; i++){
-          let bigCate = sm[i].match(/data-original-title="(\w+)"/gs)
-          bigCate = bigCate.map(one=>one.split("=")[1].replace(/\"/g,""))
-          smList.push(bigCate)
+          const smList = []
+          for (let i = 0; i < sm.length; i++) {
+            let bigCate = sm[i].match(/data-original-title="(\w+)"/gs)
+            bigCate = bigCate.map(one => one.split('=')[1].replace(/\"/g, ''))
+            smList.push(bigCate)
+          }
+          const ret = {}
+
+          for (let i = 0; i < fCate.length; i++) {
+            ret[fCate[i]] = smList[i]
+          }
+
+          console.log(ret)
+          return <SegmentfaultSetting bigCate={fCate} sonCate={ret}/>
+        } catch (e) {
+          const fCate = []
+          const ret = []
+          return <SegmentfaultSetting bigCate={fCate} sonCate={ret}/>
         }
-        var ret = {}
-
-        for(let i=0;i<fCate.length;i++){
-          ret[fCate[i]] = smList[i]
-        }
-
-        console.log(ret)
-        return <SegmentfaultSetting bigCate={fCate} sonCate={ret}/>
       }
-
     }
     if (curPlatform && curPlatform.name === 'zhihu') {
-      return ZhihuSetting
+      return <ZhihuSetting/>
     }
     if (curPlatform && curPlatform.name == 'oschina') {
-      if(curPlatformRes !== ""){
-        var re = /<div class="item" data-value="\d+">(\S*)</g;
-        var r = curPlatformRes.match(re);
-        const publishZone = r.map(one=>one.split(">")[1].replace("<",""))
+      if (curPlatformRes !== '') {
+       try {
+         var re = /<div class="item" data-value="\d+">(\S*)</g;
+         var r = curPlatformRes.match(re);
+         const publishZone = r.map(one => one.split('>')[1].replace('<', ''))
 
-        var re_category = /<option value="\d+">(\S*)</g;
+         const re_category = /<option value="\d+">(\S*)</g;
 
-        var r = curPlatformRes.match(re_category);
-        const category= r.map(one=>one.split(">")[1].replace("<",""))
-        console.log(publishZone)
-        console.log(category)
-        return <OschinaSetting category={category} publishZone={publishZone}/>
+         var r = curPlatformRes.match(re_category);
+         const category = r.map(one => one.split('>')[1].replace('<', ''))
+         console.log(publishZone)
+         console.log(category)
+         return <OschinaSetting category={category} publishZone={publishZone}/>
+       } catch (e) {
+         const category = []
+         const publishZone = []
+         return <OschinaSetting category={category} publishZone={publishZone}/>
+       }
       }
-
     }
     if (curPlatform && curPlatform.name == constants.platform.JIANSHU) {
-      return <JianshuSettings/>
+      if (curPlatformRes !== '') {
+        const category = JSON.parse(curPlatformRes)
+        console.log(category)
+        return <JianshuSettings category={category}/>
+      }
     }
     if (curPlatform && curPlatform.name == 'cnblogs') {
             return <CnblogSetting/>
     }
     if (curPlatform && curPlatform.name == 'csdn') {
-      if(curPlatformRes !==""){
-        const category = JSON.parse(curPlatformRes)["data"]["categorys"]
+      if (curPlatformRes !== '') {
+        const category = JSON.parse(curPlatformRes).data.categorys
         console.log(category)
         return <CsdnSetting category={category}/>
       }
-
     }
     if (curPlatform && curPlatform.name === constants.platform.JUEJIN) {
-      if(curPlatformRes !=="") {
-        const category = JSON.parse(curPlatformRes)["data"]
-        let categoryList = []
-        for(let i=0; i<category.length; i++){
-          categoryList.push(category[i]["category"]["category_name"])
+      if (curPlatformRes !== '') {
+        const category = JSON.parse(curPlatformRes).data
+        const categoryList = []
+        for (let i = 0; i < category.length; i++) {
+          categoryList.push(category[i].category.category_name)
         }
         return <JuejinSetting category={categoryList}/>
       }
-
     }
     if (curPlatform && curPlatform.name == constants.platform.TOUTIAO) {
-      return
+
     }
   }
   const getAlertMsg = () => {
